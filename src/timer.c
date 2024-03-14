@@ -895,6 +895,16 @@ void rt_system_timer_init(void)
 }
 
 /**
+ * @brief This function will initialize system timer thread
+ * 
+ * @param parameter 
+ */
+static void  timeout(void* parameter)
+{
+
+
+}
+/**
  * @ingroup SystemInit
  *
  * @brief This function will initialize system timer thread
@@ -924,6 +934,12 @@ void rt_system_timer_thread_init(void)
 
     /* startup */
     rt_thread_startup(&_timer_thread);
+
+#ifdef RT_USING_CPU_USAGE
+static struct rt_timer time;
+    rt_timer_init(&time,"usage timer", timeout, NULL,1000, RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
+    rt_timer_start(&time);
+#endif
 #endif /* RT_USING_TIMER_SOFT */
 }
 

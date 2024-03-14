@@ -35,8 +35,8 @@
 #include <rtthread.h>
 #include <rthw.h>
 
-#define DBG_TAG           "kernel.scheduler"
-#define DBG_LVL           DBG_INFO
+#define DBG_TAG "kernel.scheduler"
+#define DBG_LVL DBG_INFO
 #include <rtdbg.h>
 
 rt_list_t rt_thread_priority_table[RT_THREAD_PRIORITY_MAX];
@@ -50,6 +50,10 @@ extern volatile rt_uint8_t rt_interrupt_nest;
 static rt_int16_t rt_scheduler_lock_nest;
 struct rt_thread *rt_current_thread = RT_NULL;
 rt_uint8_t rt_current_priority;
+
+#ifdef RT_USING_CPU_USAGE
+static rt_uint64_t last_time_tick;
+#endif /* RT_USING_CPU_USAGE */
 
 #if defined(RT_USING_HOOK) && defined(RT_HOOK_USING_FUNC_PTR)
 static void (*rt_scheduler_hook)(struct rt_thread *from, struct rt_thread *to);
@@ -97,7 +101,7 @@ static void _scheduler_stack_check(struct rt_thread *thread)
 
     /* if stack pointer locate in user data section skip stack check. */
     if (lwp && ((rt_uint32_t)thread->sp > (rt_uint32_t)lwp->data_entry &&
-    (rt_uint32_t)thread->sp <= (rt_uint32_t)lwp->data_entry + (rt_uint32_t)lwp->data_size))
+                (rt_uint32_t)thread->sp <= (rt_uint32_t)lwp->data_entry + (rt_uint32_t)lwp->data_size))
     {
         return;
     }
@@ -112,14 +116,15 @@ static void _scheduler_stack_check(struct rt_thread *thread)
 #endif /* ARCH_CPU_STACK_GROWS_UPWARD */
         (rt_ubase_t)thread->sp <= (rt_ubase_t)thread->stack_addr ||
         (rt_ubase_t)thread->sp >
-        (rt_ubase_t)thread->stack_addr + (rt_ubase_t)thread->stack_size)
+            (rt_ubase_t)thread->stack_addr + (rt_ubase_t)thread->stack_size)
     {
         rt_base_t level;
 
         rt_kprintf("thread:%s stack overflow\n", thread->parent.name);
 
         level = rt_hw_interrupt_disable();
-        while (level);
+        while (level)
+            ;
     }
 #endif
 #ifdef ARCH_CPU_STACK_GROWS_UPWARD
@@ -146,7 +151,7 @@ static void _scheduler_stack_check(struct rt_thread *thread)
 }
 #endif /* RT_USING_OVERFLOW_CHECK */
 
-static struct rt_thread* _scheduler_get_highest_priority_thread(rt_ubase_t *highest_prio)
+static struct rt_thread *_scheduler_get_highest_priority_thread(rt_ubase_t *highest_prio)
 {
     struct rt_thread *highest_priority_thread;
     rt_ubase_t highest_ready_priority;
@@ -210,7 +215,7 @@ void rt_system_scheduler_init(void)
     LOG_D("start scheduler: max priority 0x%02x",
           RT_THREAD_PRIORITY_MAX);
 
-    for (offset = 0; offset < RT_THREAD_PRIORITY_MAX; offset ++)
+    for (offset = 0; offset < RT_THREAD_PRIORITY_MAX; offset++)
     {
         rt_list_init(&rt_thread_priority_table[offset]);
     }
@@ -247,6 +252,31 @@ void rt_system_scheduler_start(void)
     /* never come back */
 }
 
+#ifdef RT_USING_CPU_USAGE
+rt_weak rt_uint64_t rt_thread_usage_get_now_time(void)
+{
+    return rt_tick_get();
+}
+
+/**
+ * @brief This funtion will get the interval time;
+ *
+ * @return rt_uint64_t
+ */
+static rt_uint64_t rt_thread_uasge_get_interval_time(void)
+{
+    return rt_thread_usage_get_now_time() - last_time_tick;
+}
+
+/**
+ * @brief This funtion will Resets the measurement start time
+ *
+ */
+static void rt_reaet_time_thread_usage(void)
+{
+    last_time_tick = rt_thread_usage_get_now_time();
+}
+#endif /* RT_USING_CPU_USAGE */
 /**
  * @addtogroup Thread
  * @cond
@@ -263,7 +293,12 @@ void rt_schedule(void)
     rt_base_t level;
     struct rt_thread *to_thread;
     struct rt_thread *from_thread;
-
+#ifdef RT_USING_CPU_USAGE
+    volatile rt_uint64_t interval_time;
+#endif
+#ifdef RT_USING_CPU_USAGE
+    interval_time = rt_thread_uasge_get_interval_time();
+#endif
     /* disable interrupt */
     level = rt_hw_interrupt_disable();
 
@@ -297,10 +332,13 @@ void rt_schedule(void)
 
             if (to_thread != rt_current_thread)
             {
+                #ifdef RT_USING_CPU_USAGE
+                rt_current_thread->duration_tick += interval_time;
+                #endif
                 /* if the destination thread is not the same as current thread */
                 rt_current_priority = (rt_uint8_t)highest_ready_priority;
-                from_thread         = rt_current_thread;
-                rt_current_thread   = to_thread;
+                from_thread = rt_current_thread;
+                rt_current_thread = to_thread;
 
                 RT_OBJECT_HOOK_CALL(rt_scheduler_hook, (from_thread, to_thread));
 
@@ -319,11 +357,11 @@ void rt_schedule(void)
 
                 /* switch to new thread */
                 LOG_D("[%d]switch to priority#%d "
-                         "thread:%.*s(sp:0x%08x), "
-                         "from thread:%.*s(sp: 0x%08x)",
-                         rt_interrupt_nest, highest_ready_priority,
-                         RT_NAME_MAX, to_thread->parent.name, to_thread->sp,
-                         RT_NAME_MAX, from_thread->parent.name, from_thread->sp);
+                      "thread:%.*s(sp:0x%08x), "
+                      "from thread:%.*s(sp: 0x%08x)",
+                      rt_interrupt_nest, highest_ready_priority,
+                      RT_NAME_MAX, to_thread->parent.name, to_thread->sp,
+                      RT_NAME_MAX, from_thread->parent.name, from_thread->sp);
 
 #ifdef RT_USING_OVERFLOW_CHECK
                 _scheduler_stack_check(to_thread);
@@ -336,8 +374,10 @@ void rt_schedule(void)
                     RT_OBJECT_HOOK_CALL(rt_scheduler_switch_hook, (from_thread));
 
                     rt_hw_context_switch((rt_ubase_t)&from_thread->sp,
-                            (rt_ubase_t)&to_thread->sp);
-
+                                         (rt_ubase_t)&to_thread->sp);
+#ifdef RT_USING_CPU_USAGE
+                    rt_reaet_time_thread_usage();
+#endif
                     /* enable interrupt */
                     rt_hw_interrupt_enable(level);
 
@@ -367,7 +407,10 @@ void rt_schedule(void)
                     LOG_D("switch in interrupt");
 
                     rt_hw_context_switch_interrupt((rt_ubase_t)&from_thread->sp,
-                            (rt_ubase_t)&to_thread->sp, from_thread, to_thread);
+                                                   (rt_ubase_t)&to_thread->sp, from_thread, to_thread);
+#ifdef RT_USING_CPU_USAGE
+                    rt_reaet_time_thread_usage();
+#endif
                 }
             }
             else
@@ -377,7 +420,6 @@ void rt_schedule(void)
             }
         }
     }
-
     /* enable interrupt */
     rt_hw_interrupt_enable(level);
 
@@ -389,9 +431,9 @@ __exit:
 void rt_sched_thread_startup(struct rt_thread *thread)
 {
 #if RT_THREAD_PRIORITY_MAX > 32
-    RT_SCHED_PRIV(thread).number = RT_SCHED_PRIV(thread).current_priority >> 3;            /* 5bit */
+    RT_SCHED_PRIV(thread).number = RT_SCHED_PRIV(thread).current_priority >> 3; /* 5bit */
     RT_SCHED_PRIV(thread).number_mask = 1L << RT_SCHED_PRIV(thread).number;
-    RT_SCHED_PRIV(thread).high_mask = 1L << (RT_SCHED_PRIV(thread).current_priority & 0x07);  /* 3bit */
+    RT_SCHED_PRIV(thread).high_mask = 1L << (RT_SCHED_PRIV(thread).current_priority & 0x07); /* 3bit */
 #else
     RT_SCHED_PRIV(thread).number_mask = 1L << RT_SCHED_PRIV(thread).current_priority;
 #endif /* RT_THREAD_PRIORITY_MAX > 32 */
@@ -406,7 +448,7 @@ void rt_sched_thread_init_priv(struct rt_thread *thread, rt_uint32_t tick, rt_ui
 
     /* priority init */
     RT_ASSERT(priority < RT_THREAD_PRIORITY_MAX);
-    RT_SCHED_PRIV(thread).init_priority    = priority;
+    RT_SCHED_PRIV(thread).init_priority = priority;
     RT_SCHED_PRIV(thread).current_priority = priority;
 
     /* don't add to scheduler queue as init thread */
@@ -448,7 +490,7 @@ void rt_sched_insert_thread(struct rt_thread *thread)
     /* READY thread, insert to ready queue */
     RT_SCHED_CTX(thread).stat = RT_THREAD_READY | (RT_SCHED_CTX(thread).stat & ~RT_THREAD_STAT_MASK);
     /* there is no time slices left(YIELD), inserting thread before ready list*/
-    if((RT_SCHED_CTX(thread).stat & RT_THREAD_STAT_YIELD_MASK) != 0)
+    if ((RT_SCHED_CTX(thread).stat & RT_THREAD_STAT_YIELD_MASK) != 0)
     {
         rt_list_insert_before(&(rt_thread_priority_table[RT_SCHED_PRIV(thread).current_priority]),
                               &RT_THREAD_LIST_NODE(thread));
@@ -457,7 +499,7 @@ void rt_sched_insert_thread(struct rt_thread *thread)
     else
     {
         rt_list_insert_after(&(rt_thread_priority_table[RT_SCHED_PRIV(thread).current_priority]),
-                              &RT_THREAD_LIST_NODE(thread));
+                             &RT_THREAD_LIST_NODE(thread));
     }
 
     LOG_D("insert thread[%.*s], the priority: %d",
@@ -530,13 +572,14 @@ void rt_exit_critical_safe(rt_base_t critical_level)
             int dummy = 1;
             _critical_error_occurred = 1;
 
-            rt_kprintf("%s: un-compatible critical level\n" \
+            rt_kprintf("%s: un-compatible critical level\n"
                        "\tCurrent %d\n\tCaller %d\n",
                        __func__, rt_scheduler_lock_nest,
                        critical_level);
             rt_backtrace();
 
-            while (dummy) ;
+            while (dummy)
+                ;
         }
     }
     rt_hw_interrupt_enable(level);
@@ -569,7 +612,7 @@ rt_base_t rt_enter_critical(void)
      * the maximal number of nest is RT_UINT16_MAX, which is big
      * enough and does not check here
      */
-    rt_scheduler_lock_nest ++;
+    rt_scheduler_lock_nest++;
     critical_level = rt_scheduler_lock_nest;
 
     /* enable interrupt */
@@ -589,7 +632,7 @@ void rt_exit_critical(void)
     /* disable interrupt */
     level = rt_hw_interrupt_disable();
 
-    rt_scheduler_lock_nest --;
+    rt_scheduler_lock_nest--;
     if (rt_scheduler_lock_nest <= 0)
     {
         rt_scheduler_lock_nest = 0;

@@ -4,11 +4,15 @@
 /* Automatically generated file; DO NOT EDIT. */
 /* RT-Thread Configuration */
 
+#define SOC_STM32F427II
+
 /* RT-Thread Kernel */
 
 #define RT_NAME_MAX 8
+#define RT_CPUS_NR 1
 #define RT_ALIGN_SIZE 8
 #define RT_THREAD_PRIORITY_32
+#define RT_USING_CPU_USAGE
 #define RT_THREAD_PRIORITY_MAX 32
 #define RT_TICK_PER_SECOND 1000
 #define RT_USING_OVERFLOW_CHECK
@@ -17,6 +21,9 @@
 #define RT_USING_IDLE_HOOK
 #define RT_IDLE_HOOK_LIST_SIZE 4
 #define IDLE_THREAD_STACK_SIZE 256
+#define RT_USING_TIMER_SOFT
+#define RT_TIMER_THREAD_PRIO 4
+#define RT_TIMER_THREAD_STACK_SIZE 512
 
 /* kservice optimization */
 
@@ -34,18 +41,15 @@
 
 /* Memory Management */
 
-#define RT_USING_MEMPOOL
 #define RT_USING_SMALL_MEM
 #define RT_USING_SMALL_MEM_AS_HEAP
 #define RT_USING_HEAP
-
-/* Kernel Device Object */
-
 #define RT_USING_DEVICE
 #define RT_USING_CONSOLE
 #define RT_CONSOLEBUF_SIZE 128
 #define RT_CONSOLE_DEVICE_NAME "uart6"
-#define RT_VER_NUM 0x50002
+#define RT_VER_NUM 0x50100
+#define RT_BACKTRACE_LEVEL_MAX_NR 32
 #define RT_USING_HW_ATOMIC
 #define RT_USING_CPU_FFS
 #define ARCH_ARM
@@ -111,6 +115,9 @@
 /* Network */
 
 
+/* Memory protection */
+
+
 /* Utilities */
 
 
@@ -128,6 +135,15 @@
 
 
 /* Wiced WiFi */
+
+
+/* CYW43012 WiFi */
+
+
+/* BL808 WiFi */
+
+
+/* CYW43439 WiFi */
 
 
 /* IoT Cloud */
@@ -154,20 +170,47 @@
 
 /* tools packages */
 
+#define PKG_USING_CMBACKTRACE
+#define PKG_CMBACKTRACE_PLATFORM_M4
+#define PKG_CMBACKTRACE_DUMP_STACK
+#define PKG_CMBACKTRACE_PRINT_CHINESE_UTF8
+#define PKG_USING_CMBACKTRACE_V10401
+#define PKG_CMBACKTRACE_VER_NUM 0x10401
 
 /* system packages */
 
 /* enhanced kernel services */
 
+#define PKG_USING_RT_VSNPRINTF_FULL
+#define PKG_VSNPRINTF_SUPPORT_DECIMAL_SPECIFIERS
+#define PKG_VSNPRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
+#define PKG_VSNPRINTF_SUPPORT_WRITEBACK_SPECIFIER
+#define PKG_VSNPRINTF_SUPPORT_LONG_LONG
+#define PKG_VSNPRINTF_CHECK_FOR_NUL_IN_FORMAT_SPECIFIER
+#define PKG_VSNPRINTF_INTEGER_BUFFER_SIZE 32
+#define PKG_VSNPRINTF_DECIMAL_BUFFER_SIZE 32
+#define PKG_VSNPRINTF_DEFAULT_FLOAT_PRECISION 6
+#define PKG_VSNPRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL 9
+#define PKG_VSNPRINTF_LOG10_TAYLOR_TERMS 4
+#define RT_VSNPRINTF_FULL_REPLACING_PRINTF
+#define PKG_USING_RT_VSNPRINTF_FULL_LATEST_VERSION
 
 /* acceleration: Assembly language or algorithmic acceleration packages */
 
 
 /* CMSIS: ARM Cortex-M Microcontroller Software Interface Standard */
 
+#define PKG_USING_CMSIS_5
+#define PKG_CMSIS_CORE
+#define PKG_USING_CMSIS_5_V50900
+#define PKG_CMSIS_5_VER_NUM 0x50900
+#define PKG_USING_CMSIS_5_AUX
 
 /* Micrium: Micrium software products porting for RT-Thread */
 
+#define PKG_USING_PERF_COUNTER
+#define PKG_PERF_COUNTER_USING_THREAD_STATISTIC
+#define PKG_USING_PERF_COUNTER_V2241
 
 /* peripheral libraries and drivers */
 
@@ -234,8 +277,6 @@
 #define SOC_SERIES_STM32F4
 
 /* Hardware Drivers Config */
-
-#define SOC_STM32F427II
 
 /* Onboard Peripheral Drivers */
 

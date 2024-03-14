@@ -126,6 +126,8 @@ rt_err_t rt_sched_unlock_n_resched(rt_sched_lock_level_t level);
 
 rt_bool_t rt_sched_is_locked(void);
 
+rt_weak rt_uint64_t rt_thread_usage_get_now_time(void);
+
 #ifdef RT_USING_SMP
 #define RT_SCHED_DEBUG_IS_LOCKED do { RT_ASSERT(rt_sched_is_locked()); } while (0)
 #define RT_SCHED_DEBUG_IS_UNLOCKED do { RT_ASSERT(!rt_sched_is_locked()); } while (0)

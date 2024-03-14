@@ -100,6 +100,11 @@ choice
         bool "256"
 endchoice
 
+config RT_USING_CPU_USAGE
+    bool "Enable the usage of thread"
+    default true
+    select RT_USING_TIMER_SOFT 
+    
 config RT_THREAD_PRIORITY_MAX
     int
     default 8   if RT_THREAD_PRIORITY_8

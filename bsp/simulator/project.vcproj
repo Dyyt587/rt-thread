@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject Keyword="Win32Proj" Name="vs" ProjectGUID="{4A6BF1B1-C645-4BAD-A9B7-7B6E3DB67B2C}" ProjectType="Visual C++" RootNamespace="vs2008" Version="8.00">
+  <Platforms>
+    <Platform Name="Win32" />
+  </Platforms>
+  <ToolFiles>
+	</ToolFiles>
+  <Configurations>
+    <Configuration CharacterSet="0" ConfigurationType="1" IntermediateDirectory="$(ConfigurationName)" Name="Debug|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)">
+      <Tool Name="VCPreBuildEventTool" />
+      <Tool Name="VCCustomBuildTool" />
+      <Tool Name="VCXMLDataGeneratorTool" />
+      <Tool Name="VCWebServiceProxyGeneratorTool" />
+      <Tool Name="VCMIDLTool" />
+      <Tool AdditionalIncludeDirectories=".;..\..\components\dfs\dfs_v1\filesystems\devfs;..\..\components\dfs\dfs_v1\filesystems\elmfat;..\..\components\dfs\dfs_v1\include;..\..\components\drivers\include;..\..\components\finsh;..\..\components\libc\compilers\common\extension;..\..\components\libc\compilers\common\extension\fcntl\msvc;..\..\components\libc\compilers\common\include;..\..\components\libc\posix\io\epoll;..\..\components\libc\posix\io\eventfd;..\..\components\libc\posix\io\poll;..\..\components\libc\posix\ipc;..\..\components\net\netdev\include;..\..\components\net\sal\include;..\..\components\net\sal\include\dfs_net;..\..\components\net\sal\include\socket;..\..\components\net\sal\include\socket\sys_socket;..\..\include;..\..\libcpu\sim\win32;SDL2\include;applications;drivers" BasicRuntimeChecks="3" DebugInformationFormat="4" Detect64BitPortabilityProblems="true" MinimalRebuild="true" Name="VCCLCompilerTool" Optimization="0" PreprocessorDefinitions="RT_USING_LIBC;_CRT_DECLARE_NONSTDC_NAMES=0;_CRT_ERRNO_DEFINED;_CRT_NO_TIME_T;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;__RTTHREAD__" RuntimeLibrary="3" UsePrecompiledHeader="0" WarningLevel="3" />
+      <Tool Name="VCManagedResourceCompilerTool" />
+      <Tool Name="VCResourceCompilerTool" />
+      <Tool Name="VCPreLinkEventTool" />
+      <Tool AdditionalDependencies="winmm.lib SDL2.lib" AdditionalLibraryDirectories="SDL2\lib\x86" GenerateDebugInformation="true" LinkIncremental="2" Name="VCLinkerTool" SubSystem="1" TargetMachine="1" />
+      <Tool Name="VCALinkTool" />
+      <Tool Name="VCManifestTool" />
+      <Tool Name="VCXDCMakeTool" />
+      <Tool Name="VCBscMakeTool" />
+      <Tool Name="VCFxCopTool" />
+      <Tool Name="VCAppVerifierTool" />
+      <Tool Name="VCWebDeploymentTool" />
+      <Tool Name="VCPostBuildEventTool" />
+    </Configuration>
+    <Configuration CharacterSet="1" ConfigurationType="1" IntermediateDirectory="$(ConfigurationName)" Name="Release|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)" WholeProgramOptimization="1">
+      <Tool Name="VCPreBuildEventTool" />
+      <Tool Name="VCCustomBuildTool" />
+      <Tool Name="VCXMLDataGeneratorTool" />
+      <Tool Name="VCWebServiceProxyGeneratorTool" />
+      <Tool Name="VCMIDLTool" />
+      <Tool DebugInformationFormat="3" Detect64BitPortabilityProblems="true" Name="VCCLCompilerTool" PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE" RuntimeLibrary="2" UsePrecompiledHeader="0" WarningLevel="3" />
+      <Tool Name="VCManagedResourceCompilerTool" />
+      <Tool Name="VCResourceCompilerTool" />
+      <Tool Name="VCPreLinkEventTool" />
+      <Tool EnableCOMDATFolding="2" GenerateDebugInformation="true" LinkIncremental="1" Name="VCLinkerTool" OptimizeReferences="2" SubSystem="1" TargetMachine="1" />
+      <Tool Name="VCALinkTool" />
+      <Tool Name="VCManifestTool" />
+      <Tool Name="VCXDCMakeTool" />
+      <Tool Name="VCBscMakeTool" />
+      <Tool Name="VCFxCopTool" />
+      <Tool Name="VCAppVerifierTool" />
+      <Tool Name="VCWebDeploymentTool" />
+      <Tool Name="VCPostBuildEventTool" />
+    </Configuration>
+  </Configurations>
+  <References>
+	</References>
+  <Files>
+    <Filter Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx" Name="Source Files" UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+      <Filter Name="Applications">
+        <File RelativePath="applications\application.c" />
+        <File RelativePath="applications\mnt.c" />
+        <File RelativePath="applications\platform.c" />
+      </Filter>
+      <Filter Name="Compiler">
+        <File RelativePath="..\..\components\libc\compilers\common\cctype.c" />
+        <File RelativePath="..\..\components\libc\compilers\common\cstdlib.c" />
+        <File RelativePath="..\..\components\libc\compilers\common\cstring.c" />
+        <File RelativePath="..\..\components\libc\compilers\common\ctime.c" />
+        <File RelativePath="..\..\components\libc\compilers\common\cunistd.c" />
+        <File RelativePath="..\..\components\libc\compilers\common\cwchar.c" />
+      </Filter>
+      <Filter Name="DeviceDrivers">
+        <File RelativePath="..\..\components\drivers\core\device.c" />
+        <File RelativePath="..\..\components\drivers\ipc\completion.c" />
+        <File RelativePath="..\..\components\drivers\ipc\dataqueue.c" />
+        <File RelativePath="..\..\components\drivers\ipc\pipe.c" />
+        <File RelativePath="..\..\components\drivers\ipc\ringblk_buf.c" />
+        <File RelativePath="..\..\components\drivers\ipc\ringbuffer.c" />
+        <File RelativePath="..\..\components\drivers\ipc\waitqueue.c" />
+        <File RelativePath="..\..\components\drivers\ipc\workqueue.c" />
+        <File RelativePath="..\..\components\drivers\rtc\rtc.c" />
+        <File RelativePath="..\..\components\drivers\serial\serial.c" />
+      </Filter>
+      <Filter Name="Drivers">
+        <File RelativePath="drivers\sd_sim.c" />
+        <File RelativePath="drivers\drv_rtc.c" />
+        <File RelativePath="drivers\uart_console.c" />
+        <File RelativePath="drivers\board.c" />
+        <File RelativePath="SDL2\lib\x86\SDL2.lib" />
+      </Filter>
+      <Filter Name="Filesystem">
+        <File RelativePath="..\..\components\dfs\dfs_v1\filesystems\devfs\devfs.c" />
+        <File RelativePath="..\..\components\dfs\dfs_v1\filesystems\elmfat\dfs_elm.c" />
+        <File RelativePath="..\..\components\dfs\dfs_v1\filesystems\elmfat\ff.c" />
+        <File RelativePath="..\..\components\dfs\dfs_v1\filesystems\elmfat\ffunicode.c" />
+        <File RelativePath="..\..\components\dfs\dfs_v1\src\dfs.c" />
+        <File RelativePath="..\..\components\dfs\dfs_v1\src\dfs_file.c" />
+        <File RelativePath="..\..\components\dfs\dfs_v1\src\dfs_fs.c" />
+        <File RelativePath="..\..\components\dfs\dfs_v1\src\dfs_posix.c" />
+      </Filter>
+      <Filter Name="Finsh">
+        <File RelativePath="..\..\components\finsh\shell.c" />
+        <File RelativePath="..\..\components\finsh\msh.c" />
+        <File RelativePath="..\..\components\finsh\msh_parse.c" />
+        <File RelativePath="..\..\components\finsh\cmd.c" />
+        <File RelativePath="..\..\components\finsh\msh_file.c" />
+      </Filter>
+      <Filter Name="Kernel">
+        <File RelativePath="..\..\src\clock.c" />
+        <File RelativePath="..\..\src\idle.c" />
+        <File RelativePath="..\..\src\ipc.c" />
+        <File RelativePath="..\..\src\irq.c" />
+        <File RelativePath="..\..\src\kservice.c" />
+        <File RelativePath="..\..\src\mem.c" />
+        <File RelativePath="..\..\src\mempool.c" />
+        <File RelativePath="..\..\src\object.c" />
+        <File RelativePath="..\..\src\scheduler_comm.c" />
+        <File RelativePath="..\..\src\scheduler_up.c" />
+        <File RelativePath="..\..\src\thread.c" />
+        <File RelativePath="..\..\src\timer.c" />
+      </Filter>
+      <Filter Name="libcpu">
+        <File RelativePath="..\..\libcpu\sim\win32\startup.c" />
+        <File RelativePath="..\..\libcpu\sim\win32\cpu_port.c" />
+      </Filter>
+      <Filter Name="POSIX">
+        <File RelativePath="..\..\components\libc\posix\io\poll\poll.c" />
+        <File RelativePath="..\..\components\libc\posix\io\poll\select.c" />
+      </Filter>
+      <Filter Name="SAL">
+        <File RelativePath="..\..\components\net\netdev\src\netdev.c" />
+        <File RelativePath="..\..\components\net\netdev\src\netdev_ipaddr.c" />
+        <File RelativePath="..\..\components\net\sal\dfs_net\dfs_net.c" />
+        <File RelativePath="..\..\components\net\sal\socket\net_netdb.c" />
+        <File RelativePath="..\..\components\net\sal\socket\net_sockets.c" />
+        <File RelativePath="..\..\components\net\sal\src\sal_socket.c" />
+      </Filter>
+    </Filter>
+    <Filter Filter="h;hpp;hxx;hm;inl;inc;xsd" Name="Header Files" UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+      <File RelativePath="drivers\board.h" />
+      <File RelativePath="drivers\uart_console.h" />
+      <File RelativePath="rtconfig.h" />
+      <File RelativePath="rtconfig_project.h" />
+      <File RelativePath="..\..\components\dfs\dfs_v1\filesystems\devfs\devfs.h" />
+      <File RelativePath="..\..\components\dfs\dfs_v1\filesystems\elmfat\diskio.h" />
+      <File RelativePath="..\..\components\dfs\dfs_v1\filesystems\elmfat\ff.h" />
+      <File RelativePath="..\..\components\dfs\dfs_v1\filesystems\elmfat\ffconf.h" />
+      <File RelativePath="..\..\components\dfs\dfs_v1\include\dfs.h" />
+      <File RelativePath="..\..\components\dfs\dfs_v1\include\dfs_file.h" />
+      <File RelativePath="..\..\components\dfs\dfs_v1\include\dfs_fs.h" />
+      <File RelativePath="..\..\components\dfs\dfs_v1\include\dfs_private.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\adc.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\alarm.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\audio.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\byteorder.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\can.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\classes\block.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\classes\char.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\classes\graphic.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\classes\mtd.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\classes\net.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\clk.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\core\dm.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\core\driver.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\cputime.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\cputimer.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\crypto.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\dac.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\hwtimer.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\i2c-bit-ops.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\i2c.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\i2c_dev.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\lcd.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\lptimer.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\misc.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\mmcsd_card.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\mmcsd_cmd.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\mmcsd_core.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\mmcsd_host.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\mtd_nand.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\mtd_nor.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\ofw.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\ofw_fdt.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\ofw_io.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\ofw_irq.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\ofw_raw.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\phy.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\phy_mdio.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\pic.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\pin.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\platform.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\pm.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\pulse_encoder.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\rt_dev_bus.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\rt_drv_pwm.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\rt_inputcapture.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\rtc.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\sd.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\sdio.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\sdio_func_ids.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\sensor.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\sensor_v2.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\serial.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\serial_v2.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\spi.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\touch.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\usb_common.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\usb_device.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\usb_host.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\watchdog.h" />
+      <File RelativePath="..\..\components\drivers\include\drivers\wlan.h" />
+      <File RelativePath="..\..\components\drivers\include\ipc\completion.h" />
+      <File RelativePath="..\..\components\drivers\include\ipc\dataqueue.h" />
+      <File RelativePath="..\..\components\drivers\include\ipc\pipe.h" />
+      <File RelativePath="..\..\components\drivers\include\ipc\poll.h" />
+      <File RelativePath="..\..\components\drivers\include\ipc\ringblk_buf.h" />
+      <File RelativePath="..\..\components\drivers\include\ipc\ringbuffer.h" />
+      <File RelativePath="..\..\components\drivers\include\ipc\waitqueue.h" />
+      <File RelativePath="..\..\components\drivers\include\ipc\workqueue.h" />
+      <File RelativePath="..\..\components\drivers\include\rtdevice.h" />
+      <File RelativePath="..\..\components\finsh\finsh.h" />
+      <File RelativePath="..\..\components\finsh\msh.h" />
+      <File RelativePath="..\..\components\finsh\shell.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\extension\fcntl\msvc\fcntl.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\extension\sys\errno.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\extension\sys\stat.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\extension\sys\types.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\dirent.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\posix\ctype.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\posix\stdlib.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\posix\string.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\posix\wchar.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\sys\ioctl.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\sys\select.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\sys\signal.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\sys\statfs.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\sys\time.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\sys\unistd.h" />
+      <File RelativePath="..\..\components\libc\compilers\common\include\unistd.h" />
+      <File RelativePath="..\..\components\libc\posix\io\poll\poll.h" />
+      <File RelativePath="..\..\components\libc\posix\ipc\semaphore.h" />
+      <File RelativePath="..\..\components\net\netdev\include\arpa\inet.h" />
+      <File RelativePath="..\..\components\net\netdev\include\netdev.h" />
+      <File RelativePath="..\..\components\net\netdev\include\netdev_ipaddr.h" />
+      <File RelativePath="..\..\components\net\sal\include\dfs_net\dfs_net.h" />
+      <File RelativePath="..\..\components\net\sal\include\sal_low_lvl.h" />
+      <File RelativePath="..\..\components\net\sal\include\sal_netdb.h" />
+      <File RelativePath="..\..\components\net\sal\include\sal_socket.h" />
+      <File RelativePath="..\..\components\net\sal\include\sal_tls.h" />
+      <File RelativePath="..\..\components\net\sal\include\socket\netdb.h" />
+      <File RelativePath="..\..\components\net\sal\include\socket\sys_socket\sys\socket.h" />
+      <File RelativePath="..\..\include\rtatomic.h" />
+      <File RelativePath="..\..\include\rtcompiler.h" />
+      <File RelativePath="..\..\include\rtdbg.h" />
+      <File RelativePath="..\..\include\rtdef.h" />
+      <File RelativePath="..\..\include\rthw.h" />
+      <File RelativePath="..\..\include\rtm.h" />
+      <File RelativePath="..\..\include\rtsched.h" />
+      <File RelativePath="..\..\include\rtservice.h" />
+      <File RelativePath="..\..\include\rtthread.h" />
+      <File RelativePath="..\..\include\rttypes.h" />
+      <File RelativePath="..\..\libcpu\sim\win32\cpu_port.h" />
+    </Filter>
+    <Filter Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav" Name="Resource Files" UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+		</Filter>
+  </Files>
+  <Globals>
+	</Globals>
+</VisualStudioProject>
