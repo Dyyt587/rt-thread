@@ -32,6 +32,7 @@
  * 2022-07-02     Stanley Lwin add list command
  * 2023-09-15     xqyjlj       perf rt_hw_interrupt_disable/enable
  * 2024-02-09     Bernard      fix the version command
+ * 2024-03-15     Dyyt587      add thread usage for list_thread
  */
 
 #include <rthw.h>
@@ -279,10 +280,11 @@ long list_thread(void)
                                rt_uint64_t now_time = rt_thread_usage_get_now_time();
 
 #ifdef PKG_USING_RT_VSNPRINTF_FULL
-															 double test= (tick/now_time)/100.f;
-															 rt_kprintf("  %.2f%%\n",test);
+															 //double test= (tick/now_time)/100.f;
+															 double test= (thread->duration_tick*100.f/rt_thread_usage_get_now_time());
+															 rt_kprintf("  %.3f%%\n",test);
 #else
-                    rt_kprintf("%s%02d%% ","   ", (tick/now_time)/100);
+                    rt_kprintf("%s%02d%%\n","   ", (tick/now_time)/100);
 #endif
 #else
                     rt_kprintf(" 0x%08x 0x%08x    %02d%%   0x%08x %s %p\n",

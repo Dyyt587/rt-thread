@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2023, RT-Thread Development Team
+ * Copyright (c) 2006-2024, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -30,6 +30,7 @@
  * 2022-01-07     Gabriel      Moving __on_rt_xxxxx_hook to scheduler.c
  * 2023-03-27     rose_man     Split into scheduler upc and scheduler_mp.c
  * 2023-10-17     ChuShicheng  Modify the timing of clearing RT_THREAD_STAT_YIELD flag bits
+ * 2024-03-15     Dyyt587      add thread usage support
  */
 
 #include <rtthread.h>
@@ -255,7 +256,13 @@ void rt_system_scheduler_start(void)
 #ifdef RT_USING_CPU_USAGE
 rt_weak rt_uint64_t rt_thread_usage_get_now_time(void)
 {
+    #ifdef PKG_USING_PERF_COUNTER
+    //#include <perf_counter.h>
+    extern int64_t get_system_ticks(void);
+    return get_system_ticks();
+    #else
     return rt_tick_get();
+    #endif
 }
 
 /**
