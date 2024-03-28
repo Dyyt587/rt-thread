@@ -557,9 +557,9 @@ config RT_USING_SENSOR
     default n
 
 if RT_USING_SENSOR
-    # config RT_USING_SENSOR_V2
-    #     bool "Enable Sensor Framework v2"
-    #     default n
+    config RT_USING_SENSOR_V2
+        bool "Enable Sensor Framework v2"
+        default n
 
     config RT_USING_SENSOR_CMD
         bool "Using Sensor cmd"
@@ -809,6 +809,10 @@ menuconfig RT_USING_WIFI
 
             config RT_WLAN_MSH_CMD_ENABLE
                 bool "MSH command Enable"
+                default y
+
+            config RT_WLAN_JOIN_SCAN_BY_MGNT
+                bool "Enable wlan join scan"
                 default y
 
             config RT_WLAN_AUTO_CONNECT_ENABLE
