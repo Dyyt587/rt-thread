@@ -117,7 +117,6 @@
 #define RT_SERIAL_RB_BUFSZ 512
 #define RT_USING_I2C
 #define RT_USING_I2C_BITOPS
-#define RT_USING_PIN
 #define RT_USING_SDIO
 #define RT_SDIO_STACK_SIZE 512
 #define RT_SDIO_THREAD_PRIORITY 15
@@ -127,13 +126,13 @@
 #define RT_USING_SPI
 #define RT_USING_WDT
 #define RT_USING_TOUCH
+#define RT_USING_PIN
 #define RT_USING_KTIME
 
 /* Using USB */
 
 
 /* C/C++ and POSIX layer */
-
 
 /* ISO-ANSI C layer */
 
@@ -208,6 +207,7 @@
 #define RT_LWIP_ETHTHREAD_MBOX_SIZE 8
 #define LWIP_NETIF_STATUS_CALLBACK 1
 #define LWIP_NETIF_LINK_CALLBACK 1
+#define RT_LWIP_NETIF_NAMESIZE 6
 #define SO_REUSE 1
 #define LWIP_SO_RCVTIMEO 1
 #define LWIP_SO_SNDTIMEO 1
@@ -216,6 +216,9 @@
 #define LWIP_NETIF_LOOPBACK 0
 #define RT_LWIP_USING_PING
 
+/* Memory protection */
+
+
 /* Utilities */
 
 #define RT_USING_ADT
@@ -223,12 +226,6 @@
 #define RT_USING_ADT_BITMAP
 #define RT_USING_ADT_HASHMAP
 #define RT_USING_ADT_REF
-
-/* Memory management */
-
-
-/* Memory protection */
-
 
 /* RT-Thread Utestcases */
 
@@ -247,6 +244,12 @@
 
 
 /* CYW43012 WiFi */
+
+
+/* BL808 WiFi */
+
+
+/* CYW43439 WiFi */
 
 
 /* IoT Cloud */
@@ -290,13 +293,18 @@
 
 /* peripheral libraries and drivers */
 
+/* HAL & SDK Drivers */
+
+/* STM32 HAL & SDK Drivers */
+
+
+/* Kendryte SDK */
+
+
 /* sensors drivers */
 
 
 /* touch drivers */
-
-
-/* Kendryte SDK */
 
 
 /* AI packages */
@@ -349,14 +357,6 @@
 
 /* Uncategorized */
 
-/* Privated Packages of RealThread */
-
-
-/* Network Utilities */
-
-
-/* RT-Thread Smart */
-
 #define BCM2711_SOC
 
 /* Hardware Drivers Config */
@@ -385,8 +385,6 @@
 
 /* Board Peripheral Drivers */
 
-#define BSP_USING_LCD
-#define BSP_USING_DSI_DISPLAY
 #define BSP_USING_TOUCH
 #define BSP_USING_DSI_TOUCH_DEV
 

@@ -6,6 +6,7 @@
  * Change Logs:
  * Date           Author       Notes
  * 2022-04-28     CDT          first version
+ * 2023-10-09     CDT          support HC32F448
  */
 
 #include <rtthread.h>
@@ -25,6 +26,8 @@
 #if defined (HC32F4A0)
     #define PIN_MAX_NUM                     ((GPIO_PORT_I * 16) + (__CLZ(__RBIT(GPIO_PIN_13))) + 1)
 #elif defined (HC32F460)
+    #define PIN_MAX_NUM                     ((GPIO_PORT_H * 16) + (__CLZ(__RBIT(GPIO_PIN_02))) + 1)
+#elif defined (HC32F448)
     #define PIN_MAX_NUM                     ((GPIO_PORT_H * 16) + (__CLZ(__RBIT(GPIO_PIN_02))) + 1)
 #endif
 
@@ -280,7 +283,7 @@ static void hc32_pin_write(struct rt_device *device, rt_base_t pin, rt_uint8_t v
     }
 }
 
-static rt_int8_t hc32_pin_read(struct rt_device *device, rt_base_t pin)
+static rt_ssize_t hc32_pin_read(struct rt_device *device, rt_base_t pin)
 {
     uint8_t  gpio_port;
     uint16_t gpio_pin;
@@ -298,6 +301,10 @@ static rt_int8_t hc32_pin_read(struct rt_device *device, rt_base_t pin)
         {
             value = PIN_HIGH;
         }
+    }
+    else
+    {
+        return -RT_EINVAL;
     }
 
     return value;

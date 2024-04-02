@@ -195,13 +195,18 @@
 
 /* peripheral libraries and drivers */
 
+/* HAL & SDK Drivers */
+
+/* STM32 HAL & SDK Drivers */
+
+
+/* Kendryte SDK */
+
+
 /* sensors drivers */
 
 
 /* touch drivers */
-
-
-/* Kendryte SDK */
 
 
 /* AI packages */
@@ -263,5 +268,6 @@
 #define PLIC_PHY_ADDR 0x70000000
 #define IRQ_MAX_NR 128
 #define TIMER_CLK_FREQ 25000000
+#define BOARD_TYPE_MILKV_DUO256M
 
 #endif

@@ -20,6 +20,9 @@ on:
       - documentation/**
       - '**/README.md'
       - '**/README_zh.md'
+  repository_dispatch:
+    types:
+      - online-pkgs-static-building-trigger-event
   workflow_dispatch:
 
 permissions:
@@ -34,14 +37,17 @@ jobs:
       fail-fast: false
       matrix:
        legs:
-         -  RTT_BSP: "RT-Thread Online Packages"
+         -  RTT_BSP: "RT-Thread Online Packages (STM32F407 RT-Spark)"
             RTT_TOOL_CHAIN: "sourcery-arm"
             SUB_RTT_BSP:
                 - "stm32/stm32f407-rt-spark"
-         -  RTT_BSP: "RTduino/Arduino Libraries"
+         -  RTT_BSP: "RTduino/Arduino Libraries (STM32F412 Nucleo)"
             RTT_TOOL_CHAIN: "sourcery-arm"
             SUB_RTT_BSP:
                 - "stm32/stm32f412-st-nucleo"
+         -  RTT_BSP: "RTduino/Arduino Libraries (Raspberry Pico)"
+            RTT_TOOL_CHAIN: "sourcery-arm"
+            SUB_RTT_BSP:
                 - "raspberry-pico"
          -  RTT_BSP: "others_at32_hc32"
             RTT_TOOL_CHAIN: "sourcery-arm"
@@ -76,6 +82,7 @@ jobs:
                 - "at32/at32f437-start"
                 - "yichip/yc3122-pos"
                 - "hc32/ev_hc32f4a0_lqfp176"
+                - "hc32/ev_hc32f448_lqfp80"
                 - "hc32/ev_hc32f460_lqfp100_v2"
                 - "hc32l196"
                 - "mm32/mm32f3270-100ask-pitaya"
@@ -95,6 +102,7 @@ jobs:
                 - "stm32/stm32l053-st-nucleo"
                 - "stm32/stm32l412-st-nucleo"
                 - "stm32/stm32l431-BearPi"
+                - "stm32/stm32l431-tencentos-tiny-EVB_MX+"
                 - "stm32/stm32l432-st-nucleo"
                 - "stm32/stm32l433-ali-startkit"
                 - "stm32/stm32l433-st-nucleo"
@@ -179,30 +187,30 @@ jobs:
          -  RTT_BSP: "nxp_renesas" 
             RTT_TOOL_CHAIN: "sourcery-arm"
             SUB_RTT_BSP: 
-                - "lpc55sxx/lpc55s69_nxp_evk"
-                - "lpc55sxx/lpc55s28_nxp_evk"
-                - "lpc55sxx/lpc55s06_nxp_evk"
-                - "lpc55sxx/lpc55s16_nxp_evk"
-                - "lpc55sxx/lpc55s36_nxp_evk"
-                - "lpc178x"
-                - "lpc408x"
-                - "lpc1114"
-                - "lpc2148"
-                - "lpc2478"
-                - "lpc5410x"
-                - "lpc54114-lite"
-                - "imx6sx/cortex-a9"
-                - "imxrt/imxrt1052-atk-commander"
-                - "imxrt/imxrt1052-fire-pro"
-                - "imxrt/imxrt1052-nxp-evk"
-                - "imxrt/imxrt1052-seeed-ArchMix"
-                - "imxrt/imxrt1060-nxp-evk"
-                - "imxrt/imxrt1064-nxp-evk"
-                - "imxrt/imxrt1021-nxp-evk"
-                - "frdm-k64f"
-                - "lpc176x"
-                - "xplorer4330/M4"
-                #- "lpc43xx/M4"
+                - "nxp/lpc/lpc55sxx/lpc55s69_nxp_evk"
+                - "nxp/lpc/lpc55sxx/lpc55s28_nxp_evk"
+                - "nxp/lpc/lpc55sxx/lpc55s06_nxp_evk"
+                - "nxp/lpc/lpc55sxx/lpc55s16_nxp_evk"
+                - "nxp/lpc/lpc55sxx/lpc55s36_nxp_evk"
+                - "nxp/lpc/lpc178x"
+                - "nxp/lpc/lpc408x"
+                - "nxp/lpc/lpc1114"
+                - "nxp/lpc/lpc2148"
+                - "nxp/lpc/lpc2478"
+                # - "nxp/lpc/lpc5410x"
+                # - "nxp/lpc/lpc54114-lite"
+                - "nxp/lpc/lpc176x"
+                #- "nxp/lpc/lpc43xx/M4"
+                - "nxp/imx/imx6sx/cortex-a9"
+                - "nxp/imx/imxrt/imxrt1052-atk-commander"
+                - "nxp/imx/imxrt/imxrt1052-fire-pro"
+                - "nxp/imx/imxrt/imxrt1052-nxp-evk"
+                - "nxp/imx/imxrt/imxrt1052-seeed-ArchMix"
+                - "nxp/imx/imxrt/imxrt1060-nxp-evk"
+                - "nxp/imx/imxrt/imxrt1064-nxp-evk"
+                - "nxp/imx/imxrt/imxrt1021-nxp-evk"
+                - "nxp/mcx/mcxn/frdm-mcxn947"
+                - "nxp/mcx/mcxa/frdm-mcxa153"
                 - "renesas/ebf_qi_min_6m5"
                 - "renesas/ra6m4-cpk"
                 - "renesas/ra6m4-iot"
@@ -212,6 +220,9 @@ jobs:
                 - "renesas/ra2l1-cpk"
                 - "renesas/ra8m1-ek"
                 - "renesas/ra8d1-ek"
+                - "renesas/ra8d1-vision-board"
+                - "frdm-k64f"
+                - "xplorer4330/M4"
          -  RTT_BSP: "gd32_n32_apm32"   
             RTT_TOOL_CHAIN: "sourcery-arm"
             SUB_RTT_BSP:             

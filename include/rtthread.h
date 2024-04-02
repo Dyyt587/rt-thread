@@ -21,6 +21,8 @@
  * 2023-06-30     ChuShicheng  move debug check from the rtdebug.h
  * 2023-10-16     Shell        Support a new backtrace framework
  * 2023-12-10     xqyjlj       fix spinlock in up
+ * 2024-01-25     Shell        Add rt_susp_list for IPC primitives
+ * 2024-03-10     Meco Man     move std libc related functions to rtklibc
  */
 
 #ifndef __RT_THREAD_H__
@@ -31,6 +33,7 @@
 #include <rtservice.h>
 #include <rtm.h>
 #include <rtatomic.h>
+#include <rtklibc.h>
 #ifdef RT_USING_LEGACY
 #include <rtlegacy.h>
 #endif
@@ -40,6 +43,10 @@
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifdef __GNUC__
+int entry(void);
 #endif
 
 /**
@@ -169,7 +176,6 @@ rt_err_t rt_thread_resume(rt_thread_t thread);
 rt_err_t rt_thread_wakeup(rt_thread_t thread);
 void rt_thread_wakeup_set(struct rt_thread *thread, rt_wakeup_func_t func, void* user_data);
 #endif /* RT_USING_SMART */
-void rt_thread_timeout(void *parameter);
 rt_err_t rt_thread_get_name(rt_thread_t thread, char *name, rt_uint8_t name_size);
 #ifdef RT_USING_SIGNALS
 void rt_thread_alloc_sig(rt_thread_t tid);
@@ -207,11 +213,22 @@ void rt_system_scheduler_init(void);
 void rt_system_scheduler_start(void);
 
 void rt_schedule(void);
-void rt_schedule_insert_thread(struct rt_thread *thread);
-void rt_schedule_remove_thread(struct rt_thread *thread);
+void rt_scheduler_do_irq_switch(void *context);
 
-void rt_enter_critical(void);
+#ifdef RT_USING_OVERFLOW_CHECK
+void rt_scheduler_stack_check(struct rt_thread *thread);
+
+#define RT_SCHEDULER_STACK_CHECK(thr) rt_scheduler_stack_check(thr)
+
+#else /* !RT_USING_OVERFLOW_CHECK */
+
+#define RT_SCHEDULER_STACK_CHECK(thr)
+
+#endif /* RT_USING_OVERFLOW_CHECK */
+
+rt_base_t rt_enter_critical(void);
 void rt_exit_critical(void);
+void rt_exit_critical_safe(rt_base_t critical_level);
 rt_uint16_t rt_critical_level(void);
 
 #ifdef RT_USING_HOOK
@@ -334,6 +351,15 @@ void rt_memheap_info(struct rt_memheap *heap,
                      rt_size_t *max_used);
 #endif /* RT_USING_MEMHEAP */
 
+#ifdef RT_USING_MEMHEAP_AS_HEAP
+/**
+ * memory heap as heap
+ */
+void *_memheap_alloc(struct rt_memheap *heap, rt_size_t size);
+void _memheap_free(void *rmem);
+void *_memheap_realloc(struct rt_memheap *heap, void *rmem, rt_size_t newsize);
+#endif
+
 #ifdef RT_USING_SLAB
 /**
  * slab object interface
@@ -353,6 +379,26 @@ void rt_slab_free(rt_slab_t m, void *ptr);
  * @addtogroup IPC
  * @{
  */
+
+/**
+ * Suspend list - A basic building block for IPC primitives which interacts with
+ *                scheduler directly. Its API is similar to a FIFO list.
+ *
+ * Note: don't use in application codes directly
+ */
+void rt_susp_list_print(rt_list_t *list);
+/* reserve thread error while resuming it */
+#define RT_THREAD_RESUME_RES_THR_ERR (-1)
+struct rt_thread *rt_susp_list_dequeue(rt_list_t *susp_list, rt_err_t thread_error);
+rt_err_t rt_susp_list_resume_all(rt_list_t *susp_list, rt_err_t thread_error);
+rt_err_t rt_susp_list_resume_all_irq(rt_list_t *susp_list,
+                                     rt_err_t thread_error,
+                                     struct rt_spinlock *lock);
+
+/* suspend and enqueue */
+rt_err_t rt_thread_suspend_to_list(rt_thread_t thread, rt_list_t *susp_list, int ipc_flags, int suspend_flag);
+/* only for a suspended thread, and caller must hold the scheduler lock */
+rt_err_t rt_susp_list_enqueue(rt_list_t *susp_list, rt_thread_t thread, int ipc_flags);
 
 #ifdef RT_USING_SEMAPHORE
 /*
@@ -454,6 +500,8 @@ rt_err_t rt_mb_delete(rt_mailbox_t mb);
 #endif /* RT_USING_HEAP */
 
 rt_err_t rt_mb_send(rt_mailbox_t mb, rt_ubase_t value);
+rt_err_t rt_mb_send_interruptible(rt_mailbox_t mb, rt_ubase_t value);
+rt_err_t rt_mb_send_killable(rt_mailbox_t mb, rt_ubase_t value);
 rt_err_t rt_mb_send_wait(rt_mailbox_t mb,
                          rt_ubase_t  value,
                          rt_int32_t   timeout);
@@ -662,6 +710,8 @@ void rt_cpus_unlock(rt_base_t level);
 struct rt_cpu *rt_cpu_self(void);
 struct rt_cpu *rt_cpu_index(int index);
 
+void rt_cpus_lock_status_restore(struct rt_thread *thread);
+
 #endif /* RT_USING_SMP */
 
 /*
@@ -699,19 +749,14 @@ rt_err_t rt_backtrace(void);
 rt_err_t rt_backtrace_thread(rt_thread_t thread);
 rt_err_t rt_backtrace_frame(struct rt_hw_backtrace_frame *frame);
 
-int rt_vsprintf(char *dest, const char *format, va_list arg_ptr);
-int rt_vsnprintf(char *buf, rt_size_t size, const char *fmt, va_list args);
-int rt_sprintf(char *buf, const char *format, ...);
-int rt_snprintf(char *buf, rt_size_t size, const char *format, ...);
-
 #if defined(RT_USING_DEVICE) && defined(RT_USING_CONSOLE)
 rt_device_t rt_console_set_device(const char *name);
 rt_device_t rt_console_get_device(void);
-#ifdef RT_USING_THREDSAFE_PRINTF
+#ifdef RT_USING_THREADSAFE_PRINTF
     rt_thread_t rt_console_current_user(void);
 #else
     rt_inline void *rt_console_current_user(void) { return RT_NULL; }
-#endif /* RT_USING_THREDSAFE_PRINTF */
+#endif /* RT_USING_THREADSAFE_PRINTF */
 #endif /* defined(RT_USING_DEVICE) && defined(RT_USING_CONSOLE) */
 
 rt_err_t rt_get_errno(void);
@@ -725,39 +770,6 @@ const char *rt_strerror(rt_err_t error);
 #endif /* !defined(RT_USING_NEWLIBC) && !defined(_WIN32) */
 
 int __rt_ffs(int value);
-
-#ifndef RT_KSERVICE_USING_STDLIB_MEMORY
-void *rt_memset(void *src, int c, rt_ubase_t n);
-void *rt_memcpy(void *dest, const void *src, rt_ubase_t n);
-void *rt_memmove(void *dest, const void *src, rt_size_t n);
-rt_int32_t rt_memcmp(const void *cs, const void *ct, rt_size_t count);
-#endif /* RT_KSERVICE_USING_STDLIB_MEMORY */
-char *rt_strdup(const char *s);
-rt_size_t rt_strnlen(const char *s, rt_ubase_t maxlen);
-#ifndef RT_KSERVICE_USING_STDLIB
-char *rt_strstr(const char *str1, const char *str2);
-rt_int32_t rt_strcasecmp(const char *a, const char *b);
-char *rt_strcpy(char *dst, const char *src);
-char *rt_strncpy(char *dest, const char *src, rt_size_t n);
-rt_int32_t rt_strncmp(const char *cs, const char *ct, rt_size_t count);
-rt_int32_t rt_strcmp(const char *cs, const char *ct);
-rt_size_t rt_strlen(const char *src);
-#else
-#include <string.h>
-#ifdef RT_KSERVICE_USING_STDLIB_MEMORY
-#define rt_memset(s, c, count)      memset(s, c, count)
-#define rt_memcpy(dst, src, count)  memcpy(dst, src, count)
-#define rt_memmove(dest, src, n)    memmove(dest, src, n)
-#define rt_memcmp(cs, ct, count)    memcmp(cs, ct, count)
-#endif /* RT_KSERVICE_USING_STDLIB_MEMORY */
-#define rt_strstr(str1, str2)       strstr(str1, str2)
-#define rt_strcasecmp(a, b)         strcasecmp(a, b)
-#define rt_strcpy(dest, src)        strcpy(dest, src)
-#define rt_strncpy(dest, src, n)    strncpy(dest, src, n)
-#define rt_strncmp(cs, ct, count)   strncmp(cs, ct, count)
-#define rt_strcmp(cs, ct)           strcmp(cs, ct)
-#define rt_strlen(src)              strlen(src)
-#endif /*RT_KSERVICE_USING_STDLIB*/
 
 void rt_show_version(void);
 

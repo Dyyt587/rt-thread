@@ -134,7 +134,7 @@ rt_isr_handler_t rt_hw_interrupt_install(int              vector,
                                          const char      *name);
 
 #ifdef RT_USING_SMP
-rt_base_t rt_hw_local_irq_disable();
+rt_base_t rt_hw_local_irq_disable(void);
 void rt_hw_local_irq_enable(rt_base_t level);
 
 rt_base_t rt_cpus_lock(void);
