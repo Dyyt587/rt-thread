@@ -256,13 +256,13 @@ void rt_system_scheduler_start(void)
 #ifdef RT_USING_CPU_USAGE
 rt_weak rt_uint64_t rt_thread_usage_get_now_time(void)
 {
-    #ifdef PKG_USING_PERF_COUNTER
-    //#include <perf_counter.h>
+#ifdef PKG_USING_PERF_COUNTER
+    // #include <perf_counter.h>
     extern int64_t get_system_ticks(void);
     return get_system_ticks();
-    #else
+#else
     return rt_tick_get();
-    #endif
+#endif
 }
 
 /**
@@ -339,9 +339,9 @@ void rt_schedule(void)
 
             if (to_thread != rt_current_thread)
             {
-                #ifdef RT_USING_CPU_USAGE
+#ifdef RT_USING_CPU_USAGE
                 rt_current_thread->duration_tick += interval_time;
-                #endif
+#endif
                 /* if the destination thread is not the same as current thread */
                 rt_current_priority = (rt_uint8_t)highest_ready_priority;
                 from_thread = rt_current_thread;
