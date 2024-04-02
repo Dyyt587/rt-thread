@@ -26,6 +26,7 @@
 #include "ipc/completion.h"
 #include "ipc/dataqueue.h"
 #include "ipc/workqueue.h"
+#include "ipc/condvar.h"
 #include "ipc/waitqueue.h"
 #include "ipc/pipe.h"
 #include "ipc/poll.h"
@@ -183,6 +184,7 @@ extern "C" {
 
 #ifdef RT_USING_DM
 #include "drivers/core/dm.h"
+#include "drivers/platform.h"
 
 #ifdef RT_USING_OFW
 #include "drivers/ofw.h"

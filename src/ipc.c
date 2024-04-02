@@ -289,6 +289,7 @@ rt_err_t rt_susp_list_enqueue(rt_list_t *susp_list, rt_thread_t thread, int ipc_
  */
 void rt_susp_list_print(rt_list_t *list)
 {
+#ifdef RT_USING_CONSOLE
     rt_sched_lock_level_t slvl;
     struct rt_thread *thread;
     struct rt_list_node *node;
@@ -305,6 +306,9 @@ void rt_susp_list_print(rt_list_t *list)
     }
 
     rt_sched_unlock(slvl);
+#else
+    (void)list;
+#endif
 }
 
 
@@ -594,7 +598,7 @@ static rt_err_t _rt_sem_take(rt_sem_t sem, rt_int32_t timeout, int suspend_flag)
             thread = rt_thread_self();
 
             /* reset thread error number */
-            thread->error = -RT_EINTR;
+            thread->error = RT_EINTR;
 
             LOG_D("sem take: suspend thread - %s", thread->parent.name);
 

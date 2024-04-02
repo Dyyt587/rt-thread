@@ -57,17 +57,6 @@ menuconfig RT_USING_SERIAL
             default 64
     endif
 
-config RT_USING_TTY
-    bool "Using TTY SYSTEM"
-    depends on RT_USING_SMART
-    default y
-
-if RT_USING_TTY
-    config RT_TTY_DEBUG
-        bool "Using TTY DEBUG"
-        default n
-endif
-
 config RT_USING_CAN
     bool "Using CAN device drivers"
     default n
@@ -80,10 +69,6 @@ if RT_USING_CAN
         bool "Enable CANFD support"
         default n
 endif
-
-config RT_USING_HWTIMER
-    bool "Using hardware timer device drivers"
-    default n
 
 config RT_USING_CPUTIME
     bool "Enable CPU time for high resolution clock counter"
@@ -344,10 +329,6 @@ config RT_USING_PHY
     bool "Using ethernet phy device drivers"
     default n
 
-config RT_USING_PIN
-    bool "Using generic GPIO device drivers"
-    default n
-
 config RT_USING_ADC
     bool "Using ADC device drivers"
     default n
@@ -565,9 +546,9 @@ config RT_USING_SENSOR
     default n
 
 if RT_USING_SENSOR
-    # config RT_USING_SENSOR_V2
-    #     bool "Enable Sensor Framework v2"
-    #     default n
+    config RT_USING_SENSOR_V2
+        bool "Enable Sensor Framework v2"
+        default n
 
     config RT_USING_SENSOR_CMD
         bool "Using Sensor cmd"
@@ -819,6 +800,10 @@ menuconfig RT_USING_WIFI
                 bool "MSH command Enable"
                 default y
 
+            config RT_WLAN_JOIN_SCAN_BY_MGNT
+                bool "Enable wlan join scan"
+                default y
+
             config RT_WLAN_AUTO_CONNECT_ENABLE
                 bool "Auto connect Enable"
                 select RT_WLAN_CFG_ENABLE
@@ -970,8 +955,11 @@ menuconfig RT_USING_VIRTIO
 
 source "$RTT_DIR/components/drivers/ofw/Kconfig"
 source "$RTT_DIR/components/drivers/pic/Kconfig"
+source "$RTT_DIR/components/drivers/pin/Kconfig"
+source "$RTT_DIR/components/drivers/pinctrl/Kconfig"
 source "$RTT_DIR/components/drivers/ktime/Kconfig"
 source "$RTT_DIR/components/drivers/clk/Kconfig"
+source "$RTT_DIR/components/drivers/hwtimer/Kconfig"
 
 menu "Using USB"
     config RT_USING_USB
