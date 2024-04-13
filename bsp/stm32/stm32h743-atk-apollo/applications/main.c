@@ -13,8 +13,7 @@
 #include <board.h>
 
 /* defined the LED0 pin: PB1 */
-#define LED0_PIN    GET_PIN(B, 1)
-
+#define LED0_PIN    GET_PIN(D, 15)
 int main(void)
 {
     /* set LED0 pin mode to output */
@@ -28,3 +27,6 @@ int main(void)
         rt_thread_mdelay(500);
     }
 }
+
+
+
