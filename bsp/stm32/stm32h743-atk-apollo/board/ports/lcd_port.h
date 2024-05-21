@@ -1,4 +1,12 @@
 /*
+ * @Author: Dyyt587 67887002+Dyyt587@users.noreply.github.com
+ * @Date: 2024-02-03 00:00:00
+ * @LastEditors: Dyyt587 67887002+Dyyt587@users.noreply.github.com
+ * @LastEditTime: 2024-05-20 01:36:44
+ * @FilePath: \ports\lcd_port.h
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
+/*
  * Copyright (c) 2006-2021, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0

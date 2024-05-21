@@ -37,13 +37,13 @@
 /* TMRD: 2 Clock cycles */
 #define LOADTOACTIVEDELAY               2
 /* TXSR: 8x10ns */
-#define EXITSELFREFRESHDELAY            8
+#define EXITSELFREFRESHDELAY            7
 /* TRAS: 5x10ns */
-#define SELFREFRESHTIME                 6
+#define SELFREFRESHTIME                 4
 /* TRC:  7x10ns */
-#define ROWCYCLEDELAY                   6
+#define ROWCYCLEDELAY                   7
 /* TWR:  2 Clock cycles */
-#define WRITERECOVERYTIME               2
+#define WRITERECOVERYTIME               3
 /* TRP:  2x10ns */
 #define RPDELAY                         2
 /* TRCD: 2x10ns */

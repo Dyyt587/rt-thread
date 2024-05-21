@@ -69,7 +69,7 @@ bool __atomic_compare_exchange_8(volatile void *ptr, volatile void *expected, ui
     rt_hw_interrupt_enable(level);
     return exchanged;
 }
-
+#if 0
 /**
  * @param   size is the length of the value to load.
  *
@@ -147,7 +147,7 @@ bool __atomic_compare_exchange(size_t size, void *obj, void *expected, void *des
     rt_hw_interrupt_enable(level);
     return exchanged;
 }
-
+#endif
 #define __atomic_fetch_op_8(OPNAME, OP) \
 uint64_t __atomic_fetch_##OPNAME##_8(volatile void *ptr, uint64_t val, int memorder) {\
     volatile uint64_t* val_ptr = (volatile uint64_t*)ptr;\
