@@ -279,6 +279,15 @@ menu "On-chip Peripheral Drivers"
             config BSP_USING_SPI5
                 bool "Enable SPI5 BUS"
                 default n
+            if BSP_USING_SPI5
+                config BSP_SPI5_TX_USING_DMA
+                    bool "Enable SPI5 TX DMA"
+                    default n
+                config BSP_SPI5_RX_USING_DMA
+                    bool "Enable SPI5 RX DMA"
+                    default n
+            endif
+
         endif
 
     config BSP_USING_QSPI

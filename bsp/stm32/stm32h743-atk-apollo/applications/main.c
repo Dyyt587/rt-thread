@@ -36,13 +36,18 @@ int main(void)
 //		LCD_Clear(0xf000);
 //	rt_thread_mdelay(500);
 	LCD_Fill(0,0,240,320,0xff00);
+	
+	
+	  //  extern void cdc_acm_init(uint8_t busid, uint32_t reg_base);
+    //cdc_acm_init(0, USB_OTG_FS_PERIPH_BASE);
     while (1)
     {
 //					LCD_Clear(0xffff);
 //				LCD_Fill(0,0,240,320,0xff00);
 //rt_thread_mdelay(1000);
 			
-			
+			   //     extern void cdc_acm_data_send_with_dtr_test(uint8_t busid);
+        //cdc_acm_data_send_with_dtr_test(0);
 
         rt_pin_write(LED0_PIN, PIN_HIGH);
         rt_thread_mdelay(500);

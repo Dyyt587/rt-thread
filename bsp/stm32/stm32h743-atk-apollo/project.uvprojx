@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>__STDC_LIMIT_MACROS, RT_USING_ARMLIBC, STM32H743xx, __perf_counter_printf__=rt_kprintf, USE_HAL_DRIVER, RT_USING_LIBC, __CLK_TCK=RT_TICK_PER_SECOND, __PERF_CNT_USE_RTOS__, __RTTHREAD__</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\components\utilities\libadt\avl;packages\ST7789;..\..\..\components\utilities\libadt\ref;..\..\..\include;..\..\..\components\dfs\dfs_v1\filesystems\devfs;..\..\..\components\drivers\include;..\..\..\components\drivers\include;..\..\..\components\libc\posix\io\poll;..\..\..\components\libc\posix\delay;packages\get_irq_priority-latest;.;..\..\..\components\libc\posix\io\epoll;packages\aUnity-latest;..\..\..\components\libc\posix\io\eventfd;..\libraries\HAL_Drivers\drivers\config;..\..\..\components\utilities\libadt\bitmap;packages\CMSIS_5-v5.9.0\CMSIS\RTOS2\Include;..\..\..\components\libc\cplusplus\cpp11\armclang;..\..\..\components\libc\compilers\common\extension\fcntl\octal;board\ports;..\..\..\components\libc\posix\ipc;..\..\..\components\drivers\spi;packages\aUnity-latest\alist;packages\aUnity-latest\afifo;..\..\..\components\drivers\include;..\..\..\components\libc\compilers\common\include;..\..\..\libcpu\arm\cortex-m7;..\libraries\HAL_Drivers\CMSIS\Include;board;..\..\..\components\drivers\include;packages\aUnity-latest\acheck;packages\CMSIS_RTOS2-latest;..\..\..\components\dfs\dfs_v1\include;..\..\..\components\utilities\ulog;..\..\..\components\drivers\include;packages\sys_load_monitor-v1.0.0;board\CubeMX_Config\Inc;..\libraries\HAL_Drivers\drivers\drv_flash;..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Inc;..\libraries\HAL_Drivers\drivers;..\..\..\components\drivers\spi\sfud\inc;..\libraries\STM32H7xx_HAL\CMSIS\Device\ST\STM32H7xx\Include;..\..\..\components\utilities\libadt\hashmap;..\..\..\components\libc\cplusplus;..\..\..\components\finsh;..\..\..\components\libc\compilers\common\extension;..\..\..\components\libc\cplusplus\os;..\..\..\components\drivers\include;..\..\..\components\drivers\ktime\inc;..\..\..\components\drivers\include;packages\aUnity-latest\cvector;..\..\..\components\drivers\include;packages\perf_counter-v2.2.4.1;packages\cpu_usage-latest;..\..\..\components\utilities\libadt\uthash;..\..\..\components\drivers\ktime;..\..\..\components\libc\posix\io\stdio;..\libraries\HAL_Drivers;..\..\..\components\libc\posix\pthreads;packages\CMSIS_5-v5.9.0\CMSIS\Core\Include;..\..\..\libcpu\arm\common</IncludePath>
+              <IncludePath>packages\CherryUSB-latest\class\video;..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Inc;packages\ST7789;..\..\..\components\utilities\libadt\ref;packages\CherryUSB-latest\class\hid;..\..\..\components\drivers\include;..\..\..\include;..\..\..\components\dfs\dfs_v1\filesystems\devfs;..\..\..\components\drivers\include;..\..\..\components\drivers\usb\usbdevice;packages\CMSIS_RTOS2-latest;..\..\..\components\libc\posix\io\poll;..\..\..\components\libc\posix\delay;packages\CherryUSB-latest\class\wireless;packages\get_irq_priority-latest;packages\aUnity-latest\afifo;..\..\..\components\libc\posix\io\epoll;packages\CherryUSB-latest\class\dfu;packages\aUnity-latest;..\..\..\components\libc\posix\io\eventfd;..\libraries\HAL_Drivers\drivers\config;..\..\..\components\utilities\libadt\bitmap;packages\CMSIS_5-v5.9.0\CMSIS\RTOS2\Include;..\..\..\components\libc\cplusplus\cpp11\armclang;..\..\..\components\libc\compilers\common\extension\fcntl\octal;packages\CherryUSB-latest\core;..\..\..\components\utilities\libadt\avl;..\..\..\components\libc\posix\ipc;packages\cpu_usage-latest;packages\aUnity-latest\alist;.;..\..\..\components\drivers\include;packages\CherryUSB-latest\class\midi;..\..\..\components\libc\compilers\common\include;..\..\..\libcpu\arm\cortex-m7;..\libraries\HAL_Drivers\CMSIS\Include;board;..\..\..\components\drivers\include;packages\aUnity-latest\acheck;packages\perf_counter-v2.2.4.1;..\..\..\components\dfs\dfs_v1\include;..\..\..\components\utilities\ulog;..\..\..\components\drivers\include;packages\CherryUSB-latest\class\msc;board\CubeMX_Config\Inc;..\libraries\HAL_Drivers\drivers\drv_flash;packages\CherryUSB-latest\class\cdc;packages\CherryUSB-latest\osal;..\libraries\HAL_Drivers\drivers;packages\CherryUSB-latest\class\vendor\serial;..\..\..\components\drivers\spi\sfud\inc;..\libraries\STM32H7xx_HAL\CMSIS\Device\ST\STM32H7xx\Include;..\..\..\components\utilities\libadt\hashmap;..\..\..\components\libc\cplusplus;..\..\..\components\finsh;..\..\..\components\libc\compilers\common\extension;..\..\..\components\libc\cplusplus\os;packages\CherryUSB-latest\class\vendor\net;..\..\..\components\drivers\include;..\..\..\components\drivers\ktime\inc;..\..\..\components\drivers\include;packages\sys_load_monitor-v1.0.0;packages\CherryUSB-latest\common;..\..\..\components\drivers\include;..\..\..\components\drivers\spi;board\ports;packages\aUnity-latest\cvector;..\..\..\components\utilities\libadt\uthash;packages\CherryUSB-latest\class\audio;..\..\..\components\drivers\ktime;..\..\..\components\libc\posix\io\stdio;..\libraries\HAL_Drivers;..\..\..\components\libc\posix\pthreads;packages\CMSIS_5-v5.9.0\CMSIS\Core\Include;..\..\..\libcpu\arm\common</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -390,30 +390,30 @@
               <FilePath>applications\main.c</FilePath>
             </File>
             <File>
-              <FileName>CRC_Table.c</FileName>
+              <FileName>cdc_acm_template.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\CRC_Table.c</FilePath>
+              <FilePath>.\packages\CherryUSB-latest\demo\cdc_acm_template.c</FilePath>
             </File>
             <File>
-              <FileName>FDILink.c</FileName>
+              <FileName>usbd_cdc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\FDILink.c</FilePath>
+              <FilePath>.\packages\CherryUSB-latest\class\cdc\usbd_cdc.c</FilePath>
             </File>
             <File>
-              <FileName>fdilink_decode.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\applications\fdilink_decode.h</FilePath>
+              <FileName>usb_dc_dwc2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\packages\CherryUSB-latest\port\dwc2\usb_dc_dwc2.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_glue_st.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\packages\CherryUSB-latest\port\dwc2\usb_glue_st.c</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
           <GroupName>aUnity</GroupName>
           <Files>
-            <File>
-              <FileName>afifo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\aUnity-latest\afifo\afifo.c</FilePath>
-            </File>
             <File>
               <FileName>cvector.c</FileName>
               <FileType>1</FileType>
@@ -423,6 +423,36 @@
               <FileName>all_check.c</FileName>
               <FileType>1</FileType>
               <FilePath>packages\aUnity-latest\acheck\all_check.c</FilePath>
+            </File>
+            <File>
+              <FileName>afifo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\aUnity-latest\afifo\afifo.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>CherryUSB</GroupName>
+          <Files>
+            <File>
+              <FileName>usb_check.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\CherryUSB-latest\third_party\rt-thread-5.0\usb_check.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_osal_rtthread.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\CherryUSB-latest\osal\usb_osal_rtthread.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_msh.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\CherryUSB-latest\third_party\rt-thread-5.0\usb_msh.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\CherryUSB-latest\core\usbd_core.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -560,14 +590,14 @@
           <GroupName>cpu_usage</GroupName>
           <Files>
             <File>
-              <FileName>cpu_usage_cmd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\cpu_usage-latest\cpu_usage_cmd.c</FilePath>
-            </File>
-            <File>
               <FileName>cpu_usage.c</FileName>
               <FileType>1</FileType>
               <FilePath>packages\cpu_usage-latest\cpu_usage.c</FilePath>
+            </File>
+            <File>
+              <FileName>cpu_usage_cmd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\cpu_usage-latest\cpu_usage_cmd.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2962,14 +2992,14 @@
               <FilePath>..\..\..\components\drivers\ktime\src\boottime.c</FilePath>
             </File>
             <File>
-              <FileName>hrtimer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\components\drivers\ktime\src\hrtimer.c</FilePath>
-            </File>
-            <File>
               <FileName>cputimer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\components\drivers\ktime\src\cputimer.c</FilePath>
+            </File>
+            <File>
+              <FileName>hrtimer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\components\drivers\ktime\src\hrtimer.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3032,6 +3062,11 @@
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_tim.c</FilePath>
             </File>
             <File>
+              <FileName>stm32h7xx_hal_pcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_pcd.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32h7xx_hal_spi.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_spi.c</FilePath>
@@ -3042,9 +3077,9 @@
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_pwr.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_dma2d.c</FileName>
+              <FileName>stm32h7xx_ll_usb.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_dma2d.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_ll_usb.c</FilePath>
             </File>
             <File>
               <FileName>stm32h7xx_hal_tim_ex.c</FileName>
@@ -3087,6 +3122,16 @@
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_i2c_ex.c</FilePath>
             </File>
             <File>
+              <FileName>stm32h7xx_hal_lptim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_lptim.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32h7xx_hal_hcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_hcd.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32h7xx_hal_cryp_ex.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_cryp_ex.c</FilePath>
@@ -3127,9 +3172,9 @@
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_usart.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_lptim.c</FileName>
+              <FileName>stm32h7xx_hal_pcd_ex.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_lptim.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_pcd_ex.c</FilePath>
             </File>
             <File>
               <FileName>stm32h7xx_hal_crc_ex.c</FileName>
@@ -3165,6 +3210,11 @@
               <FileName>stm32h7xx_hal.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32h7xx_hal_dma2d.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_dma2d.c</FilePath>
             </File>
             <File>
               <FileName>stm32h7xx_hal_dma.c</FileName>
@@ -3304,6 +3354,21 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>rt_usbd</GroupName>
+          <Files>
+            <File>
+              <FileName>usbdevice_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\components\drivers\usb\usbdevice\core\usbdevice_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbdevice.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\components\drivers\usb\usbdevice\core\usbdevice.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>st7789</GroupName>
           <Files>
             <File>
@@ -3327,14 +3392,14 @@
           <GroupName>Utilities</GroupName>
           <Files>
             <File>
-              <FileName>ulog.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\components\utilities\ulog\ulog.c</FilePath>
-            </File>
-            <File>
               <FileName>console_be.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\components\utilities\ulog\backend\console_be.c</FilePath>
+            </File>
+            <File>
+              <FileName>ulog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\components\utilities\ulog\ulog.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3347,14 +3412,5 @@
     <components/>
     <files/>
   </RTE>
-
-  <LayerInfo>
-    <Layers>
-      <Layer>
-        <LayName>project</LayName>
-        <LayPrjMark>1</LayPrjMark>
-      </Layer>
-    </Layers>
-  </LayerInfo>
 
 </Project>
