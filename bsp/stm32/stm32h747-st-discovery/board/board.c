@@ -32,6 +32,29 @@
   * @param  None
   * @retval None
   */
+
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follow : 
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 400000000 (Cortex-M7 CPU Clock)
+  *            HCLK(Hz)                       = 200000000 (Cortex-M4 CPU, Bus matrix Clocks)
+  *            AHB Prescaler                  = 2
+  *            D1 APB3 Prescaler              = 2 (APB3 Clock  100MHz)
+  *            D2 APB1 Prescaler              = 2 (APB1 Clock  100MHz)
+  *            D2 APB2 Prescaler              = 2 (APB2 Clock  100MHz)
+  *            D3 APB4 Prescaler              = 2 (APB4 Clock  100MHz)
+  *            HSE Frequency(Hz)              = 25000000
+  *            PLL_M                          = 5
+  *            PLL_N                          = 160
+  *            PLL_P                          = 2
+  *            PLL_Q                          = 4
+  *            PLL_R                          = 2
+  *            VDD(V)                         = 3.3
+  *            Flash Latency(WS)              = 4
+  * @param  None
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
@@ -39,7 +62,7 @@ void SystemClock_Config(void)
   HAL_StatusTypeDef ret = HAL_OK;
 
   /*!< Supply configuration update enable */
-  HAL_PWREx_ConfigSupply(PWR_DIRECT_SMPS_SUPPLY);
+  HAL_PWREx_ConfigSupply(PWR_SMPS_1V8_SUPPLIES_EXT_AND_LDO);
 
   /* The voltage scaling allows optimizing the power consumption when the device is
      clocked below the maximum system frequency, to update the voltage scaling value
@@ -87,4 +110,22 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
+ /*
+  Note : The activation of the I/O Compensation Cell is recommended with communication  interfaces
+          (GPIO, SPI, FMC, QSPI ...)  when  operating at  high frequencies(please refer to product datasheet)       
+          The I/O Compensation Cell activation  procedure requires :
+        - The activation of the CSI clock
+        - The activation of the SYSCFG clock
+        - Enabling the I/O Compensation Cell : setting bit[0] of register SYSCFG_CCCSR
+ */
+  
+  /*activate CSI clock mondatory for I/O Compensation Cell*/
+  __HAL_RCC_CSI_ENABLE() ;
+
+  /* Enable SYSCFG clock mondatory for I/O Compensation Cell */
+  __HAL_RCC_SYSCFG_CLK_ENABLE() ;
+
+  /* Enables the I/O Compensation Cell */
+  HAL_EnableCompensationCell();
 }
