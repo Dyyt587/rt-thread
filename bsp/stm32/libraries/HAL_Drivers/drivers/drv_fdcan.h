@@ -2,7 +2,7 @@
  * @Author: Dyyt587 67887002+Dyyt587@users.noreply.github.com
  * @Date: 2024-08-06 23:50:22
  * @LastEditors: Dyyt587 67887002+Dyyt587@users.noreply.github.com
- * @LastEditTime: 2024-08-07 00:44:56
+ * @LastEditTime: 2024-08-07 20:04:49
  * @FilePath: \stm32h7b0-fk7b0m1-vbt6c:\Users\80520\Documents\GitHub\rt-thread\bsp\stm32\libraries\HAL_Drivers\drivers\drv_fdcan.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -78,6 +78,10 @@ struct stm32_baud_rate_tab
 struct stm32_can
 {
     char *name;
+    FDCAN_RxHeaderTypeDef RxHeader;
+	FDCAN_TxHeaderTypeDef TxHeader;
+	uint8_t u8RxDataBuffer[8];
+	uint8_t u8TxDataBuufer[8];  
     FDCAN_HandleTypeDef CanHandle;
     FDCAN_FilterTypeDef FilterConfig;
     struct rt_can_device device;     /* inherit from can device */

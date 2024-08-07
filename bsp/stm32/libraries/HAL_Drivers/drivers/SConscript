@@ -22,6 +22,8 @@ if GetDepend(['BSP_USING_TIM']):
 
 if GetDepend(['BSP_USING_PWM']):
     src += ['drv_pwm.c', 'drv_tim.c']
+if GetDepend(['BSP_USING_FDCAN']):
+    src += ['drv_fdcan.c']
 
 if GetDepend(['RT_USING_SPI']):
     src += ['drv_spi.c']

@@ -17,12 +17,14 @@
 
 
 
-
-#ifdef BSP_USING_CAN
+#ifdef BSP_USING_FDCAN
 
 #define LOG_TAG    "drv_can"
 #include <drv_log.h>
 #include <stm32h7xx_hal_fdcan.h>
+#include <board.h>
+#include <rtdevice.h>
+
 
 #define BSP_FDCAN_CLOCK 120000000
 #define BSP_USING_CAN2
@@ -38,11 +40,11 @@ static const struct stm32_baud_rate_tab can_baud_rate_tab[] =
     {CAN800kBaud,  5, 2, 18, 10, 6, 1, 15, 9}, 
     {CAN500kBaud,  10, 1, 15, 8, 12, 1, 10, 9},
     {CAN250kBaud,  20, 1, 15, 8, 12, 1, 20, 19},
-    {CAN125kBaud,  40, 1, 15, 8, 12, 1, 40, 39},
-    {CAN100kBaud,  50, 1, 15, 8, 12, 1, 15, 9},
-    {CAN50kBaud,   100, 1, 15, 8, 12, 1, 100, 99},
-    {CAN20kBaud,   250, 1, 15, 8, 24, 1, 150, 99},
-    {CAN10kBaud,   500, 1, 15, 8, 48, 1, 150, 99},
+//    {CAN125kBaud,  40, 1, 15, 8, 12, 1, 40, 39},
+//    {CAN100kBaud,  50, 1, 15, 8, 12, 1, 15, 9},
+//    {CAN50kBaud,   100, 1, 15, 8, 12, 1, 100, 99},
+//    {CAN20kBaud,   250, 1, 15, 8, 24, 1, 150, 99},
+//    {CAN10kBaud,   500, 1, 15, 8, 48, 1, 150, 99},
     #elif BSP_FDCAN_CLOCK == 60000000 /* 60MHz */
     {CAN1MBaud,    5, 1, 7, 4, 1, 1, 1, 1},
     {CAN800kBaud,  5, 1, 9, 5, 1, 1, 1, 1}, 
@@ -110,7 +112,7 @@ static rt_err_t _can_config(struct rt_can_device *can, struct can_configure *cfg
     drv_can->CanHandle.Init.DataTimeSeg1 = 1;
     drv_can->CanHandle.Init.DataTimeSeg2 = 1;
 
-	if(pdrv_can->fdcanHandle.Instance == FDCAN1)
+	if(drv_can->CanHandle.Instance == FDCAN1)
 	{
 		drv_can->CanHandle.Init.MessageRAMOffset = 0;					
 	}
@@ -166,9 +168,9 @@ static rt_err_t _can_config(struct rt_can_device *can, struct can_configure *cfg
     }
 
     /* default filter config */
-    HAL_CAN_ConfigFilter(&drv_can->CanHandle, &drv_can->FilterConfig);
+    HAL_FDCAN_ConfigFilter(&drv_can->CanHandle, &drv_can->FilterConfig);
     /* can start */
-    HAL_CAN_Start(&drv_can->CanHandle);
+    HAL_FDCAN_Start(&drv_can->CanHandle);
 
     return RT_EOK;
 }
@@ -182,7 +184,7 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
 	struct rt_can_filter_config *filter_cfg;
 
 	RT_ASSERT(can != RT_NULL);
-	pdrv_can = (_stm32_fdcan_t *)can->parent.user_data;
+	pdrv_can = (struct stm32_can *)can->parent.user_data;
 	RT_ASSERT(pdrv_can != RT_NULL);
 
 	switch (cmd)
@@ -192,30 +194,30 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
 		argval = (rt_uint32_t) arg;
 		if (argval == RT_DEVICE_FLAG_INT_RX)
 		{
-			HAL_FDCAN_DeactivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_RX_FIFO0_NEW_MESSAGE);
+			HAL_FDCAN_DeactivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_RX_FIFO0_NEW_MESSAGE);
 		}
 		else if (argval == RT_DEVICE_FLAG_INT_TX)
 		{
-			HAL_FDCAN_DeactivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_TX_FIFO_EMPTY);
-			HAL_FDCAN_DeactivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_TX_COMPLETE);
+			HAL_FDCAN_DeactivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_TX_FIFO_EMPTY);
+			HAL_FDCAN_DeactivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_TX_COMPLETE);
 		}
 		else if (argval == RT_DEVICE_CAN_INT_ERR)
 		{
-			HAL_FDCAN_DeactivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_ERROR_WARNING);
-			HAL_FDCAN_DeactivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_ERROR_PASSIVE);
-			HAL_FDCAN_DeactivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_ERROR_LOGGING_OVERFLOW);
-			HAL_FDCAN_DeactivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_BUS_OFF);
-			HAL_FDCAN_DeactivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_ARB_PROTOCOL_ERROR);
+			HAL_FDCAN_DeactivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_ERROR_WARNING);
+			HAL_FDCAN_DeactivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_ERROR_PASSIVE);
+			HAL_FDCAN_DeactivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_ERROR_LOGGING_OVERFLOW);
+			HAL_FDCAN_DeactivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_BUS_OFF);
+			HAL_FDCAN_DeactivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_ARB_PROTOCOL_ERROR);
 		}
 		break;
 	case RT_DEVICE_CTRL_SET_INT:
 		argval = (rt_uint32_t) arg;
 		if (argval == RT_DEVICE_FLAG_INT_RX)
 		{
-			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->fdcanHandle, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, FDCAN_INTERRUPT_LINE0);
-			HAL_FDCAN_ActivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
+			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->CanHandle, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, FDCAN_INTERRUPT_LINE0);
+			HAL_FDCAN_ActivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
 
-			if(FDCAN1 == pdrv_can->fdcanHandle.Instance)
+			if(FDCAN1 == pdrv_can->CanHandle.Instance)
 			{
 				HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 0, 1);
 				HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
@@ -229,12 +231,12 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
 		}
 		else if (argval == RT_DEVICE_FLAG_INT_TX)
 		{
-			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->fdcanHandle, FDCAN_IT_TX_COMPLETE, FDCAN_INTERRUPT_LINE1);
-			HAL_FDCAN_ActivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_TX_COMPLETE, FDCAN_TX_BUFFER0);
-			HAL_FDCAN_ActivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_TX_COMPLETE, FDCAN_TX_BUFFER1);
-			HAL_FDCAN_ActivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_TX_COMPLETE, FDCAN_TX_BUFFER2);
+			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->CanHandle, FDCAN_IT_TX_COMPLETE, FDCAN_INTERRUPT_LINE1);
+			HAL_FDCAN_ActivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_TX_COMPLETE, FDCAN_TX_BUFFER0);
+			HAL_FDCAN_ActivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_TX_COMPLETE, FDCAN_TX_BUFFER1);
+			HAL_FDCAN_ActivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_TX_COMPLETE, FDCAN_TX_BUFFER2);
 
-			if(FDCAN1 == pdrv_can->fdcanHandle.Instance)
+			if(FDCAN1 == pdrv_can->CanHandle.Instance)
 			{
 				HAL_NVIC_SetPriority(FDCAN1_IT1_IRQn, 0, 2);
 				HAL_NVIC_EnableIRQ(FDCAN1_IT1_IRQn);
@@ -247,16 +249,16 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
 		}
 		else if (argval == RT_DEVICE_CAN_INT_ERR)
 		{
-			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->fdcanHandle, FDCAN_IT_BUS_OFF, FDCAN_INTERRUPT_LINE1);
-			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->fdcanHandle, FDCAN_IT_ERROR_WARNING, FDCAN_INTERRUPT_LINE1);
-			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->fdcanHandle, FDCAN_IT_ERROR_PASSIVE, FDCAN_INTERRUPT_LINE1);
-			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->fdcanHandle, FDCAN_IT_ARB_PROTOCOL_ERROR, FDCAN_INTERRUPT_LINE1);
+			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->CanHandle, FDCAN_IT_BUS_OFF, FDCAN_INTERRUPT_LINE1);
+			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->CanHandle, FDCAN_IT_ERROR_WARNING, FDCAN_INTERRUPT_LINE1);
+			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->CanHandle, FDCAN_IT_ERROR_PASSIVE, FDCAN_INTERRUPT_LINE1);
+			HAL_FDCAN_ConfigInterruptLines(&pdrv_can->CanHandle, FDCAN_IT_ARB_PROTOCOL_ERROR, FDCAN_INTERRUPT_LINE1);
 
-			HAL_FDCAN_ActivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_BUS_OFF, 0);
-			HAL_FDCAN_ActivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_ERROR_WARNING, 0);
-			HAL_FDCAN_ActivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_ERROR_PASSIVE, 0);
-			HAL_FDCAN_ActivateNotification(&pdrv_can->fdcanHandle,  FDCAN_IT_ARB_PROTOCOL_ERROR, 0);
-			if(FDCAN1 == pdrv_can->fdcanHandle.Instance)
+			HAL_FDCAN_ActivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_BUS_OFF, 0);
+			HAL_FDCAN_ActivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_ERROR_WARNING, 0);
+			HAL_FDCAN_ActivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_ERROR_PASSIVE, 0);
+			HAL_FDCAN_ActivateNotification(&pdrv_can->CanHandle,  FDCAN_IT_ARB_PROTOCOL_ERROR, 0);
+			if(FDCAN1 == pdrv_can->CanHandle.Instance)
 			{
 				HAL_NVIC_SetPriority(FDCAN1_IT1_IRQn, 0, 2);
 				HAL_NVIC_EnableIRQ(FDCAN1_IT1_IRQn);
@@ -272,7 +274,7 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
 		if (RT_NULL == arg)
 		{
 			/* default filter config */
-			HAL_FDCAN_ConfigFilter(&pdrv_can->fdcanHandle , &pdrv_can->FilterConfig);
+			HAL_FDCAN_ConfigFilter(&pdrv_can->CanHandle , &pdrv_can->FilterConfig);
 		}
 		else
 		{
@@ -403,14 +405,14 @@ static int _can_sendmsg(struct rt_can_device *can, const void *buf, rt_uint32_t 
 
 	pdrv_can->TxHeader.Identifier = pmsg->id;
 	pdrv_can->TxHeader.DataLength = tmp_u32DataLen;
-	if(HAL_FDCAN_AddMessageToTxBuffer(&pdrv_can->fdcanHandle, &pdrv_can->TxHeader, pmsg->data, FDCAN_TX_BUFFER0+box_num) != HAL_OK)
+	if(HAL_FDCAN_AddMessageToTxBuffer(&pdrv_can->CanHandle, &pdrv_can->TxHeader, pmsg->data, FDCAN_TX_BUFFER0+box_num) != HAL_OK)
 	{
 		return -RT_ERROR;
 	}
 	else
 	{
 		/* Request transmission */
-		HAL_FDCAN_EnableTxBufferRequest(&pdrv_can->fdcanHandle,FDCAN_TX_BUFFER0+box_num);
+		HAL_FDCAN_EnableTxBufferRequest(&pdrv_can->CanHandle,FDCAN_TX_BUFFER0+box_num);
 		return RT_EOK;
 	}
 }
@@ -425,9 +427,9 @@ static int _can_recvmsg(struct rt_can_device *can, void *buf, rt_uint32_t fifo)
     RT_ASSERT(can);
     RT_ASSERT(buf);
 
-    pdrv_can = (_stm32_fdcan_t *)can->parent.user_data;
+    pdrv_can = (struct stm32_can *)can->parent.user_data;
     pmsg = (struct rt_can_msg *) buf;
-    if(HAL_FDCAN_GetRxMessage(&pdrv_can->fdcanHandle,FDCAN_RX_FIFO0+fifo, &pdrv_can->RxHeader, pmsg->data) != HAL_OK)
+    if(HAL_FDCAN_GetRxMessage(&pdrv_can->CanHandle,FDCAN_RX_FIFO0+fifo, &pdrv_can->RxHeader, pmsg->data) != HAL_OK)
     {
     	return -RT_ERROR;
     }
@@ -547,8 +549,8 @@ void HAL_FDCAN_ErrorCallback(FDCAN_HandleTypeDef *hfdcan)
 		}
 		else
 		{
-			tmp_u32Errcount = st_DrvCan1.fdcanHandle.Instance->ECR;
-			tmp_u32status = st_DrvCan1.fdcanHandle.Instance->PSR;
+			tmp_u32Errcount = st_DrvCan1.CanHandle.Instance->ECR;
+			tmp_u32status = st_DrvCan1.CanHandle.Instance->PSR;
 
 			st_DrvCan1.device.status.rcverrcnt = (tmp_u32Errcount>>8)&0x000000ff;
 			st_DrvCan1.device.status.snderrcnt = (tmp_u32Errcount)&0x000000ff;
@@ -569,8 +571,8 @@ void HAL_FDCAN_ErrorCallback(FDCAN_HandleTypeDef *hfdcan)
 		else
 		{
 			//can2
-			tmp_u32Errcount = st_DrvCan2.fdcanHandle.Instance->ECR;
-			tmp_u32status = st_DrvCan2.fdcanHandle.Instance->PSR;
+			tmp_u32Errcount = st_DrvCan2.CanHandle.Instance->ECR;
+			tmp_u32status = st_DrvCan2.CanHandle.Instance->PSR;
 			st_DrvCan2.device.status.rcverrcnt = (tmp_u32Errcount>>8)&0x000000ff;
 			st_DrvCan2.device.status.snderrcnt = (tmp_u32Errcount)&0x000000ff;
 			st_DrvCan2.device.status.lasterrtype = tmp_u32status&0x000000007;
