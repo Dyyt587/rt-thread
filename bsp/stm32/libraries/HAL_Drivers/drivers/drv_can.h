@@ -42,8 +42,13 @@ struct stm32_baud_rate_tab
 struct stm32_can
 {
     char *name;
-    CAN_HandleTypeDef CanHandle;
+	#if defined(STM32H7)
+    FDCAN_HandleTypeDef CanHandle;
+    FDCAN_FilterTypeDef FilterConfig;
+	#else
+	  CAN_HandleTypeDef CanHandle;
     CAN_FilterTypeDef FilterConfig;
+	#endif
     struct rt_can_device device;     /* inherit from can device */
 };
 

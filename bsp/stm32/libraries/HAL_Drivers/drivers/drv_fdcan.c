@@ -16,99 +16,45 @@
                                f4-series only.
  */
 
-#include "drv_can.h"
+#include "drv_fdcan.h"
 
 #ifdef BSP_USING_CAN
 
 #define LOG_TAG    "drv_can"
 #include <drv_log.h>
 
-/* attention !!! baud calculation example: Tclk / ((ss + bs1 + bs2) * brp) = 36 / ((1 + 8 + 3) * 3) = 1MHz*/
-#if defined (SOC_SERIES_STM32F1)/* APB1 36MHz(max) */
-static const struct stm32_baud_rate_tab can_baud_rate_tab[] =
-{
-    {CAN1MBaud, (CAN_SJW_2TQ | CAN_BS1_8TQ  | CAN_BS2_3TQ | 3)},
-    {CAN800kBaud, (CAN_SJW_2TQ | CAN_BS1_5TQ  | CAN_BS2_3TQ | 5)},
-    {CAN500kBaud, (CAN_SJW_2TQ | CAN_BS1_8TQ  | CAN_BS2_3TQ | 6)},
-    {CAN250kBaud, (CAN_SJW_2TQ | CAN_BS1_8TQ  | CAN_BS2_3TQ | 12)},
-    {CAN125kBaud, (CAN_SJW_2TQ | CAN_BS1_8TQ  | CAN_BS2_3TQ | 24)},
-    {CAN100kBaud, (CAN_SJW_2TQ | CAN_BS1_8TQ  | CAN_BS2_3TQ | 30)},
-    {CAN50kBaud, (CAN_SJW_2TQ | CAN_BS1_8TQ  | CAN_BS2_3TQ | 60)},
-    {CAN20kBaud, (CAN_SJW_2TQ | CAN_BS1_8TQ  | CAN_BS2_3TQ | 150)},
-    {CAN10kBaud, (CAN_SJW_2TQ | CAN_BS1_8TQ  | CAN_BS2_3TQ | 300)}
-};
-#elif defined (SOC_SERIES_STM32F4)  /* 42MHz or 45MHz */
-#if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx)|| defined(STM32F417xx) ||\
-    defined(STM32F401xC) || defined(STM32F401xE) /* 42MHz(max) */
-static const struct stm32_baud_rate_tab can_baud_rate_tab[] =
-{
-    {CAN1MBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_4TQ | 3)},
-    {CAN800kBaud, (CAN_SJW_2TQ | CAN_BS1_8TQ  | CAN_BS2_4TQ | 4)},
-    {CAN500kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_4TQ | 6)},
-    {CAN250kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_4TQ | 12)},
-    {CAN125kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_4TQ | 24)},
-    {CAN100kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_4TQ | 30)},
-    {CAN50kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_4TQ | 60)},
-    {CAN20kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_4TQ | 150)},
-    {CAN10kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_4TQ | 300)}
-};
-#else  /* APB1 45MHz(max) */
-static const struct stm32_baud_rate_tab can_baud_rate_tab[] =
-{
-#ifdef BSP_USING_CAN168M
-    {CAN1MBaud, (CAN_SJW_1TQ | CAN_BS1_3TQ  | CAN_BS2_3TQ | 6)},
-#else
-    {CAN1MBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_5TQ | 3)},
+#define BSP_FDCAN_CLOCK 120000000
+#define BSP_USING_CAN2
+
+#ifndef BSP_FDCAN_CLOCK
+#error please define BSP_FDCAN_CLOCK in rtconfig.h to calculate the baud rate.
 #endif
-    {CAN800kBaud, (CAN_SJW_2TQ | CAN_BS1_8TQ  | CAN_BS2_5TQ | 4)},
-    {CAN500kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_5TQ | 6)},
-    {CAN250kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_5TQ | 12)},
-    {CAN125kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_5TQ | 24)},
-    {CAN100kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_5TQ | 30)},
-    {CAN50kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_5TQ | 60)},
-    {CAN20kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_5TQ | 150)},
-    {CAN10kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_5TQ | 300)}
-};
-#endif
-#elif defined (SOC_SERIES_STM32F7)/* APB1 54MHz(max) */
+#if defined (SOC_SERIES_STM32H7)/* APB1 25MHz(max) */
 static const struct stm32_baud_rate_tab can_baud_rate_tab[] =
 {
-    {CAN1MBaud, (CAN_SJW_2TQ | CAN_BS1_10TQ  | CAN_BS2_7TQ | 3)},
-    {CAN800kBaud, (CAN_SJW_2TQ | CAN_BS1_9TQ  | CAN_BS2_7TQ | 4)},
-    {CAN500kBaud, (CAN_SJW_2TQ | CAN_BS1_10TQ  | CAN_BS2_7TQ | 6)},
-    {CAN250kBaud, (CAN_SJW_2TQ | CAN_BS1_10TQ  | CAN_BS2_7TQ | 12)},
-    {CAN125kBaud, (CAN_SJW_2TQ | CAN_BS1_10TQ  | CAN_BS2_7TQ | 24)},
-    {CAN100kBaud, (CAN_SJW_2TQ | CAN_BS1_10TQ  | CAN_BS2_7TQ | 30)},
-    {CAN50kBaud, (CAN_SJW_2TQ | CAN_BS1_10TQ  | CAN_BS2_7TQ | 60)},
-    {CAN20kBaud, (CAN_SJW_2TQ | CAN_BS1_10TQ  | CAN_BS2_7TQ | 150)},
-    {CAN10kBaud, (CAN_SJW_2TQ | CAN_BS1_10TQ  | CAN_BS2_7TQ | 300)}
-};
-#elif defined (SOC_SERIES_STM32H7)/* APB1 25MHz(max) */
-static const struct stm32_baud_rate_tab can_baud_rate_tab[] =
-{
-    {CAN1MBaud, (CAN_SJW_2TQ | CAN_BS1_5TQ  | CAN_BS2_2TQ | 10)},
-    {CAN800kBaud, (CAN_SJW_2TQ | CAN_BS1_14TQ  | CAN_BS2_5TQ | 5)},
-    {CAN500kBaud, (CAN_SJW_2TQ | CAN_BS1_7TQ  | CAN_BS2_2TQ | 16)},
-    {CAN250kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 20)},
-    {CAN125kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 40)},
-    {CAN100kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 50)},
-    {CAN50kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 100)},
-    {CAN20kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 250)},
-    {CAN10kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 500)}
-};
-#endif
-#elif defined (SOC_SERIES_STM32L4)/* APB1 80MHz(max) */
-static const struct stm32_baud_rate_tab can_baud_rate_tab[] =
-{
-    {CAN1MBaud, (CAN_SJW_2TQ | CAN_BS1_5TQ  | CAN_BS2_2TQ | 10)},
-    {CAN800kBaud, (CAN_SJW_2TQ | CAN_BS1_14TQ  | CAN_BS2_5TQ | 5)},
-    {CAN500kBaud, (CAN_SJW_2TQ | CAN_BS1_7TQ  | CAN_BS2_2TQ | 16)},
-    {CAN250kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 20)},
-    {CAN125kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 40)},
-    {CAN100kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 50)},
-    {CAN50kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 100)},
-    {CAN20kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 250)},
-    {CAN10kBaud, (CAN_SJW_2TQ | CAN_BS1_13TQ  | CAN_BS2_2TQ | 500)}
+    #if BSP_FDCAN_CLOCK == 120000000 /* 120MHz */
+    {CAN1MBaud,    5, 1, 15, 8,  12, 1, 5, 4},
+    {CAN800kBaud,  5, 2, 18, 10, 6, 1, 15, 9}, 
+    {CAN500kBaud,  10, 1, 15, 8, 12, 1, 10, 9},
+    {CAN250kBaud,  20, 1, 15, 8, 12, 1, 20, 19},
+    {CAN125kBaud,  40, 1, 15, 8, 12, 1, 40, 39},
+    {CAN100kBaud,  50, 1, 15, 8, 12, 1, 15, 9},
+    {CAN50kBaud,   100, 1, 15, 8, 12, 1, 100, 99},
+    {CAN20kBaud,   250, 1, 15, 8, 24, 1, 150, 99},
+    {CAN10kBaud,   500, 1, 15, 8, 48, 1, 150, 99},
+    #elif BSP_FDCAN_CLOCK == 60000000 /* 60MHz */
+    {CAN1MBaud,    5, 1, 7, 4, 1, 1, 1, 1},
+    {CAN800kBaud,  5, 1, 9, 5, 1, 1, 1, 1}, 
+    {CAN500kBaud,  5, 1, 15, 8, 1, 1, 1, 1},
+    {CAN250kBaud,  10, 1, 15, 8, 1, 1, 1, 1},
+    {CAN125kBaud,  20, 1, 15, 8, 1, 1, 1, 1},
+    {CAN100kBaud,  25, 1, 15, 8, 1, 1, 1, 1},
+    {CAN50kBaud,   50, 1, 15, 8, 1, 1, 1, 1},
+    {CAN20kBaud,   125, 1, 15, 8, 1, 1, 1, 1},
+    {CAN10kBaud,   250, 1, 15, 8, 1, 1, 1, 1},
+    #else
+    #error please change BSP_FDCAN_CLOCK and CubeMX config or define new table for this clock. 
+    #endif
 };
 #endif
 
@@ -116,11 +62,7 @@ static const struct stm32_baud_rate_tab can_baud_rate_tab[] =
 static struct stm32_can drv_can1 =
 {
     .name = "can1",
-#if defined(STM32H7)
     .CanHandle.Instance = FDCAN1,
-#else
-    .CanHandle.Instance = CAN1,
-#endif
 };
 #endif
 
@@ -128,11 +70,7 @@ static struct stm32_can drv_can1 =
 static struct stm32_can drv_can2 =
 {
     "can2",
-#if defined(STM32H7)
     .CanHandle.Instance = FDCAN2,
-#else
-    .CanHandle.Instance = CAN2,
-#endif
 };
 #endif
 
@@ -160,36 +98,58 @@ static rt_err_t _can_config(struct rt_can_device *can, struct can_configure *cfg
     drv_can = (struct stm32_can *)can->parent.user_data;
     RT_ASSERT(drv_can);
 
-    drv_can->CanHandle.Init.TimeTriggeredMode = DISABLE;
-    drv_can->CanHandle.Init.AutoBusOff = ENABLE;
-    drv_can->CanHandle.Init.AutoWakeUp = DISABLE;
-    drv_can->CanHandle.Init.AutoRetransmission = DISABLE;
-    drv_can->CanHandle.Init.ReceiveFifoLocked = DISABLE;
-    drv_can->CanHandle.Init.TransmitFifoPriority = ENABLE;
+    drv_can->CanHandle.Init.FrameFormat = FDCAN_FRAME_CLASSIC;
+    drv_can->CanHandle.Init.Mode = FDCAN_MODE_NORMAL;
+    drv_can->CanHandle.Init.AutoRetransmission = ENABLE;
+    drv_can->CanHandle.Init.TransmitPause = DISABLE;
+    drv_can->CanHandle.Init.ProtocolException = DISABLE;
 
+    drv_can->CanHandle.Init.DataPrescaler = 1;
+    drv_can->CanHandle.Init.DataSyncJumpWidth = 15;
+    drv_can->CanHandle.Init.DataTimeSeg1 = 1;
+    drv_can->CanHandle.Init.DataTimeSeg2 = 1;
+    drv_can->CanHandle.Init.MessageRAMOffset = 0;
+    drv_can->CanHandle.Init.StdFiltersNbr = 0;
+    drv_can->CanHandle.Init.ExtFiltersNbr = 0;
+    drv_can->CanHandle.Init.RxFifo0ElmtsNbr = 0;
+    drv_can->CanHandle.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
+    drv_can->CanHandle.Init.RxFifo1ElmtsNbr = 0;
+    drv_can->CanHandle.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
+    drv_can->CanHandle.Init.RxBuffersNbr = 0;
+    drv_can->CanHandle.Init.RxBufferSize = FDCAN_DATA_BYTES_8;
+    drv_can->CanHandle.Init.TxEventsNbr = 0;
+    drv_can->CanHandle.Init.TxBuffersNbr = 0;
+    drv_can->CanHandle.Init.TxFifoQueueElmtsNbr = 0;
+    drv_can->CanHandle.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
+    drv_can->CanHandle.Init.TxElmtSize = FDCAN_DATA_BYTES_8;
     switch (cfg->mode)
     {
     case RT_CAN_MODE_NORMAL:
-        drv_can->CanHandle.Init.Mode = CAN_MODE_NORMAL;
+        drv_can->CanHandle.Init.Mode = FDCAN_MODE_NORMAL;
         break;
     case RT_CAN_MODE_LISTEN:
-        drv_can->CanHandle.Init.Mode = CAN_MODE_SILENT;
+        drv_can->CanHandle.Init.Mode = FDCAN_MODE_RESTRICTED_OPERATION;
         break;
     case RT_CAN_MODE_LOOPBACK:
-        drv_can->CanHandle.Init.Mode = CAN_MODE_LOOPBACK;
+        drv_can->CanHandle.Init.Mode = FDCAN_MODE_INTERNAL_LOOPBACK;
         break;
     case RT_CAN_MODE_LOOPBACKANLISTEN:
-        drv_can->CanHandle.Init.Mode = CAN_MODE_SILENT_LOOPBACK;
+        drv_can->CanHandle.Init.Mode = FDCAN_MODE_EXTERNAL_LOOPBACK;
         break;
     }
 
-    baud_index = get_can_baud_index(cfg->baud_rate);
-    drv_can->CanHandle.Init.SyncJumpWidth = BAUD_DATA(SJW, baud_index);
-    drv_can->CanHandle.Init.TimeSeg1 = BAUD_DATA(BS1, baud_index);
-    drv_can->CanHandle.Init.TimeSeg2 = BAUD_DATA(BS2, baud_index);
-    drv_can->CanHandle.Init.Prescaler = BAUD_DATA(RRESCL, baud_index);
+    baud_index = get_can_baud_index(cfg->baud_rate);   
+    drv_can->CanHandle.Init.NominalPrescaler     = BAUD_DATA(NominalPrescaler, baud_index);
+    drv_can->CanHandle.Init.NominalSyncJumpWidth = BAUD_DATA(NominalSyncJumpWidth, baud_index);
+    drv_can->CanHandle.Init.NominalTimeSeg1      = BAUD_DATA(NominalTimeSeg1, baud_index);
+    drv_can->CanHandle.Init.NominalTimeSeg2      = BAUD_DATA(NominalTimeSeg2, baud_index);
+
+    drv_can->CanHandle.Init.DataPrescaler        = BAUD_DATA(DataPrescaler, baud_index);
+    drv_can->CanHandle.Init.DataSyncJumpWidth    = BAUD_DATA(DataSyncJumpWidth, baud_index);
+    drv_can->CanHandle.Init.DataTimeSeg1         = BAUD_DATA(DataTimeSeg1, baud_index);
+    drv_can->CanHandle.Init.DataTimeSeg2         = BAUD_DATA(DataTimeSeg2, baud_index);
     /* init can */
-    if (HAL_CAN_Init(&drv_can->CanHandle) != HAL_OK)
+    if (HAL_FDCAN_Init(&drv_can->CanHandle) != HAL_OK)
     {
         return -RT_ERROR;
     }
@@ -218,123 +178,150 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
         argval = (rt_uint32_t) arg;
         if (argval == RT_DEVICE_FLAG_INT_RX)
         {
-            if (CAN1 == drv_can->CanHandle.Instance)
+            if (FDCAN1 == drv_can->CanHandle.Instance)
             {
-                HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
-                HAL_NVIC_DisableIRQ(CAN1_RX1_IRQn);
+                HAL_NVIC_DisableIRQ(FDCAN1_IT0_IRQn);
+                HAL_NVIC_DisableIRQ(FDCAN1_IT1_IRQn);
             }
-#ifdef CAN2
-            if (CAN2 == drv_can->CanHandle.Instance)
+#ifdef FDCAN2
+            if (FDCAN2 == drv_can->CanHandle.Instance)
             {
-                HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
-                HAL_NVIC_DisableIRQ(CAN2_RX1_IRQn);
+                HAL_NVIC_DisableIRQ(FDCAN2_IT0_IRQn);
+                HAL_NVIC_DisableIRQ(FDCAN2_IT1_IRQn);
             }
 #endif
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_MSG_PENDING);
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_FULL);
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_OVERRUN);
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_MSG_PENDING);
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_FULL);
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_OVERRUN);
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_MSG_PENDING);
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_FULL);
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_OVERRUN);
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_MSG_PENDING);
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_FULL);
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_OVERRUN);
         }
         else if (argval == RT_DEVICE_FLAG_INT_TX)
         {
-            if (CAN1 == drv_can->CanHandle.Instance)
+            if (FDCAN1 == drv_can->CanHandle.Instance)
             {
-                HAL_NVIC_DisableIRQ(CAN1_TX_IRQn);
+                HAL_NVIC_DisableIRQ(FDCAN1_IT0_IRQn);
+                HAL_NVIC_DisableIRQ(FDCAN1_IT1_IRQn);
             }
-#ifdef CAN2
-            if (CAN2 == drv_can->CanHandle.Instance)
+#ifdef FDCAN2
+            if (FDCAN2 == drv_can->CanHandle.Instance)
             {
-                HAL_NVIC_DisableIRQ(CAN2_TX_IRQn);
-            }
+                HAL_NVIC_DisableIRQ(FDCAN2_IT0_IRQn);
+                HAL_NVIC_DisableIRQ(FDCAN2_IT1_IRQn); 
+           }
 #endif
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_TX_MAILBOX_EMPTY);
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_TX_MAILBOX_EMPTY);
         }
         else if (argval == RT_DEVICE_CAN_INT_ERR)
         {
-            if (CAN1 == drv_can->CanHandle.Instance)
-            {
-                NVIC_DisableIRQ(CAN1_SCE_IRQn);
-            }
-#ifdef CAN2
-            if (CAN2 == drv_can->CanHandle.Instance)
-            {
-                NVIC_DisableIRQ(CAN2_SCE_IRQn);
-            }
-#endif
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR_WARNING);
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR_PASSIVE);
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_BUSOFF);
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_LAST_ERROR_CODE);
-            __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR);
+//             if (FDCAN1 == drv_can->CanHandle.Instance)
+//             {
+//                 NVIC_DisableIRQ(CAN1_SCE_IRQn);
+//             }
+// #ifdef FDCAN2
+//             if (FDCAN2 == drv_can->CanHandle.Instance)
+//             {
+//                 NVIC_DisableIRQ(CAN2_SCE_IRQn);
+//             }
+// #endif
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR_WARNING);
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR_PASSIVE);
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_BUSOFF);
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_LAST_ERROR_CODE);
+            // __HAL_CAN_DISABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR);
         }
         break;
     case RT_DEVICE_CTRL_SET_INT:
         argval = (rt_uint32_t) arg;
         if (argval == RT_DEVICE_FLAG_INT_RX)
         {
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_MSG_PENDING);
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_FULL);
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_OVERRUN);
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_MSG_PENDING);
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_FULL);
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_OVERRUN);
+            // __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_MSG_PENDING);
+            // __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_FULL);
+            // __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO0_OVERRUN);
+            // __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_MSG_PENDING);
+            // __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_FULL);
+            // __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_RX_FIFO1_OVERRUN);
 
-            if (CAN1 == drv_can->CanHandle.Instance)
+            if (FDCAN1 == drv_can->CanHandle.Instance)
             {
-                HAL_NVIC_SetPriority(CAN1_RX0_IRQn, 1, 0);
-                HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
-                HAL_NVIC_SetPriority(CAN1_RX1_IRQn, 1, 0);
-                HAL_NVIC_EnableIRQ(CAN1_RX1_IRQn);
+                HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
+                HAL_NVIC_SetPriority(FDCAN1_IT1_IRQn, 1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN1_IT1_IRQn);
+                HAL_NVIC_SetPriority(FDCAN_CAL_IRQn,  1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN_CAL_IRQn);
             }
-#ifdef CAN2
-            if (CAN2 == drv_can->CanHandle.Instance)
+#ifdef FDCAN2
+            if (FDCAN2 == drv_can->CanHandle.Instance)
             {
-                HAL_NVIC_SetPriority(CAN2_RX0_IRQn, 1, 0);
-                HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);
-                HAL_NVIC_SetPriority(CAN2_RX1_IRQn, 1, 0);
-                HAL_NVIC_EnableIRQ(CAN2_RX1_IRQn);
+                HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN2_IT0_IRQn);
+                HAL_NVIC_SetPriority(FDCAN2_IT1_IRQn, 1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN2_IT1_IRQn);
+                HAL_NVIC_SetPriority(FDCAN_CAL_IRQn,  1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN_CAL_IRQn);
             }
 #endif
         }
         else if (argval == RT_DEVICE_FLAG_INT_TX)
         {
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_TX_MAILBOX_EMPTY);
+//             __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_TX_MAILBOX_EMPTY);
 
-            if (CAN1 == drv_can->CanHandle.Instance)
+//             if (FDCAN1 == drv_can->CanHandle.Instance)
+//             {
+//                 HAL_NVIC_SetPriority(CAN1_TX_IRQn, 1, 0);
+//                 HAL_NVIC_EnableIRQ(CAN1_TX_IRQn);
+//             }
+// #ifdef FDCAN2
+//             if (FDCAN2 == drv_can->CanHandle.Instance)
+//             {
+//                 HAL_NVIC_SetPriority(CAN2_TX_IRQn, 1, 0);
+//                 HAL_NVIC_EnableIRQ(CAN2_TX_IRQn);
+//             }
+// #endif
+
+            if (FDCAN1 == drv_can->CanHandle.Instance)
             {
-                HAL_NVIC_SetPriority(CAN1_TX_IRQn, 1, 0);
-                HAL_NVIC_EnableIRQ(CAN1_TX_IRQn);
+                HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
+                HAL_NVIC_SetPriority(FDCAN1_IT1_IRQn, 1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN1_IT1_IRQn);
+                HAL_NVIC_SetPriority(FDCAN_CAL_IRQn,  1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN_CAL_IRQn);
             }
-#ifdef CAN2
-            if (CAN2 == drv_can->CanHandle.Instance)
+#ifdef FDCAN2
+            if (FDCAN2 == drv_can->CanHandle.Instance)
             {
-                HAL_NVIC_SetPriority(CAN2_TX_IRQn, 1, 0);
-                HAL_NVIC_EnableIRQ(CAN2_TX_IRQn);
+                HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN2_IT0_IRQn);
+                HAL_NVIC_SetPriority(FDCAN2_IT1_IRQn, 1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN2_IT1_IRQn);
+                HAL_NVIC_SetPriority(FDCAN_CAL_IRQn,  1, 0);
+                HAL_NVIC_EnableIRQ(FDCAN_CAL_IRQn);
             }
 #endif
         }
         else if (argval == RT_DEVICE_CAN_INT_ERR)
         {
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR_WARNING);
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR_PASSIVE);
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_BUSOFF);
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_LAST_ERROR_CODE);
-            __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR);
+//             __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR_WARNING);
+//             __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR_PASSIVE);
+//             __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_BUSOFF);
+//             __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_LAST_ERROR_CODE);
+//             __HAL_CAN_ENABLE_IT(&drv_can->CanHandle, CAN_IT_ERROR);
 
-            if (CAN1 == drv_can->CanHandle.Instance)
-            {
-                HAL_NVIC_SetPriority(CAN1_SCE_IRQn, 1, 0);
-                HAL_NVIC_EnableIRQ(CAN1_SCE_IRQn);
-            }
-#ifdef CAN2
-            if (CAN2 == drv_can->CanHandle.Instance)
-            {
-                HAL_NVIC_SetPriority(CAN2_SCE_IRQn, 1, 0);
-                HAL_NVIC_EnableIRQ(CAN2_SCE_IRQn);
-            }
-#endif
+//             if (FDCAN1 == drv_can->CanHandle.Instance)
+//             {
+//                 HAL_NVIC_SetPriority(CAN1_SCE_IRQn, 1, 0);
+//                 HAL_NVIC_EnableIRQ(CAN1_SCE_IRQn);
+//             }
+// #ifdef FDCAN2
+//             if (FDCAN2 == drv_can->CanHandle.Instance)
+//             {
+//                 HAL_NVIC_SetPriority(CAN2_SCE_IRQn, 1, 0);
+//                 HAL_NVIC_EnableIRQ(CAN2_SCE_IRQn);
+//             }
+// #endif
         }
         break;
     case RT_CAN_CMD_SET_FILTER:
@@ -362,18 +349,18 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
                     if (rt_strcmp(drv_can->name, "can1") == 0)
                     {
                         /* can1 banks 0~13 */
-                        drv_can->FilterConfig.FilterBank = i;
+                        drv_can->FilterConfig.FilterIndex = i;
                     }
                     else if (rt_strcmp(drv_can->name, "can2") == 0)
                     {
                         /* can2 banks 14~27 */
-                        drv_can->FilterConfig.FilterBank = i + 14;
+                        drv_can->FilterConfig.FilterIndex = i + 14;
                     }
                 }
                 else
                 {
                     /* use user-defined filter bank settings */
-                    drv_can->FilterConfig.FilterBank = filter_cfg->items[i].hdr_bank;
+                    drv_can->FilterConfig.FilterIndex = filter_cfg->items[i].hdr_bank;
                 }
                  /**
                  * ID     | CAN_FxR1[31:24] | CAN_FxR1[23:16] | CAN_FxR1[15:8] | CAN_FxR1[7:0]       |
@@ -389,44 +376,47 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
                  *       -> FilterMaskIdHigh: (((STD mask << 21) or (EXT mask <<3)) >> 16) & 0xFFFF
                  *       -> FilterMaskIdLow: ((STD mask << 21) or (EXT mask <<3)) & 0xFFFF
                  */
+                
+                #define CAN_FILTERMODE_IDMASK 0
+                #define CAN_FILTERMODE_IDLIST 1
                 if (filter_cfg->items[i].mode == CAN_FILTERMODE_IDMASK)
                 {
-                    /* make sure the CAN_FxR1[2:0](IDE RTR) work */
-                    mask_l_tail = 0x06;
+                    drv_can->FilterConfig.FilterType = FDCAN_FILTER_MASK;
                 }
                 else if (filter_cfg->items[i].mode == CAN_FILTERMODE_IDLIST)
                 {
-                    /* same as CAN_FxR1 */
-                    mask_l_tail = (filter_cfg->items[i].ide << 2) |
-                                   (filter_cfg->items[i].rtr << 1);
+                    drv_can->FilterConfig.FilterType = FDCAN_FILTER_RANGE;
                 }
                 if (filter_cfg->items[i].ide == RT_CAN_STDID)
                 {
-                    id_h = ((filter_cfg->items[i].id << 18) >> 13) & 0xFFFF;
-                    id_l = ((filter_cfg->items[i].id << 18) |
-                            (filter_cfg->items[i].ide << 2) |
-                            (filter_cfg->items[i].rtr << 1)) & 0xFFFF;
-                    mask_h = ((filter_cfg->items[i].mask << 21) >> 16) & 0xFFFF;
-                    mask_l = ((filter_cfg->items[i].mask << 21) | mask_l_tail) & 0xFFFF;
+                    drv_can->FilterConfig.IdType = FDCAN_STANDARD_ID;
+
                 }
                 else if (filter_cfg->items[i].ide == RT_CAN_EXTID)
                 {
-                    id_h = (filter_cfg->items[i].id >> 13) & 0xFFFF;
-                    id_l = ((filter_cfg->items[i].id << 3)   |
-                            (filter_cfg->items[i].ide << 2)  |
-                            (filter_cfg->items[i].rtr << 1)) & 0xFFFF;
-                    mask_h = ((filter_cfg->items[i].mask << 3) >> 16) & 0xFFFF;
-                    mask_l = ((filter_cfg->items[i].mask << 3) | mask_l_tail) & 0xFFFF;
+                    drv_can->FilterConfig.IdType = FDCAN_EXTENDED_ID;
                 }
-                drv_can->FilterConfig.FilterIdHigh = id_h;
-                drv_can->FilterConfig.FilterIdLow = id_l;
-                drv_can->FilterConfig.FilterMaskIdHigh = mask_h;
-                drv_can->FilterConfig.FilterMaskIdLow = mask_l;
+                drv_can->FilterConfig.FilterConfig=FDCAN_FILTER_TO_RXFIFO0;           //过滤器0关联到FIFO0 
+                drv_can->FilterConfig.FilterConfig = filter_cfg->items[i].rxfifo;/*rxfifo = CAN_RX_FIFO0/CAN_RX_FIFO1*/
 
-                drv_can->FilterConfig.FilterMode = filter_cfg->items[i].mode;
-                drv_can->FilterConfig.FilterFIFOAssignment = filter_cfg->items[i].rxfifo;/*rxfifo = CAN_RX_FIFO0/CAN_RX_FIFO1*/
+                drv_can->FilterConfig.FilterID1=0;                               //32位ID
+                drv_can->FilterConfig.FilterID2=filter_cfg->items[i].mask;  //如果FDCAN配置为传统模式的话，这里是32位掩码                             //32位ID
+
+
+
+                if(HAL_FDCAN_ConfigFilter(&drv_can->CanHandle, &drv_can->FilterConfig)!=HAL_OK) //滤波器初始化
+	            	{
+	            		Error_Handler();
+	            	}
+                HAL_FDCAN_Start(&drv_can->CanHandle);                               //开启FDCAN
+                HAL_FDCAN_ActivateNotification(&drv_can->CanHandle,FDCAN_IT_RX_FIFO0_NEW_MESSAGE,0);
+                /* USER CODE END FDCAN1_Init 2 */
+
+
+
+            
                 /* Filter conf */
-                HAL_CAN_ConfigFilter(&drv_can->CanHandle, &drv_can->FilterConfig);
+                //HAL_CAN_ConfigFilter(&drv_can->CanHandle, &drv_can->FilterConfig);
             }
         }
         break;
@@ -481,12 +471,22 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
         break;
     case RT_CAN_CMD_GET_STATUS:
     {
-        rt_uint32_t errtype;
-        errtype = drv_can->CanHandle.Instance->ESR;
-        drv_can->device.status.rcverrcnt = errtype >> 24;
-        drv_can->device.status.snderrcnt = (errtype >> 16 & 0xFF);
-        drv_can->device.status.lasterrtype = errtype & 0x70;
-        drv_can->device.status.errcode = errtype & 0x07;
+
+                FDCAN_ProtocolStatusTypeDef ProtocolStatus;
+        FDCAN_ErrorCountersTypeDef ErrorCounters;
+        HAL_FDCAN_GetProtocolStatus(&drv_can->CanHandle, &ProtocolStatus);
+        HAL_FDCAN_GetErrorCounters(&drv_can->CanHandle, &ErrorCounters);
+        drv_can->device.status.rcverrcnt = ErrorCounters.RxErrorCnt+(ErrorCounters.RxErrorPassive<<8);
+        drv_can->device.status.snderrcnt = ErrorCounters.TxErrorCnt;
+        drv_can->device.status.lasterrtype = ProtocolStatus.LastErrorCode;
+        drv_can->device.status.errcode = READ_REG(drv_can->CanHandle.Instance->PSR);
+
+        // rt_uint32_t errtype;
+        // errtype = drv_can->CanHandle.Instance->ESR;
+        // drv_can->device.status.rcverrcnt = errtype >> 24;
+        // drv_can->device.status.snderrcnt = (errtype >> 16 & 0xFF);
+        // drv_can->device.status.lasterrtype = errtype & 0x70;
+        // drv_can->device.status.errcode = errtype & 0x07;
 
         rt_memcpy(arg, &drv_can->device.status, sizeof(drv_can->device.status));
     }
@@ -498,7 +498,7 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
 
 static int _can_sendmsg(struct rt_can_device *can, const void *buf, rt_uint32_t box_num)
 {
-    CAN_HandleTypeDef *hcan;
+    FDCAN_HandleTypeDef *hcan;
     hcan = &((struct stm32_can *) can->parent.user_data)->CanHandle;
     struct rt_can_msg *pmsg = (struct rt_can_msg *) buf;
     CAN_TxHeaderTypeDef txheader = {0};
@@ -640,12 +640,12 @@ static int _can_recvmsg(struct rt_can_device *can, void *buf, rt_uint32_t fifo)
     /* get len */
     pmsg->len = rxheader.DLC;
     /* get hdr_index */
-    if (hcan->Instance == CAN1)
+    if (hcan->Instance == FDCAN1)
     {
         pmsg->hdr_index = rxheader.FilterMatchIndex;
     }
-#ifdef CAN2
-    else if (hcan->Instance == CAN2)
+#ifdef FDCAN2
+    else if (hcan->Instance == FDCAN2)
     {
        pmsg->hdr_index = rxheader.FilterMatchIndex;
     }
@@ -837,89 +837,111 @@ static void _can_tx_isr(struct rt_can_device *can)
 }
 
 #ifdef BSP_USING_CAN1
-/**
- * @brief This function handles CAN1 TX interrupts. transmit fifo0/1/2 is empty can trigger this interrupt
- */
-void CAN1_TX_IRQHandler(void)
-{
-    rt_interrupt_enter();
-    _can_tx_isr(&drv_can1.device);
-    rt_interrupt_leave();
-}
+// /**
+//  * @brief This function handles FDCAN1 TX interrupts. transmit fifo0/1/2 is empty can trigger this interrupt
+//  */
+// void CAN1_TX_IRQHandler(void)
+// {
+//     rt_interrupt_enter();
+//     _can_tx_isr(&drv_can1.device);
+//     rt_interrupt_leave();
+// }
 
 /**
- * @brief This function handles CAN1 RX0 interrupts.
- */
-void CAN1_RX0_IRQHandler(void)
+  * @brief This function handles FDCAN1 interrupt 0.
+  */
+void FDCAN1_IT0_IRQHandler(void)
 {
+  /* USER CODE BEGIN FDCAN1_IT0_IRQn 0 */
     rt_interrupt_enter();
-    _can_rx_isr(&drv_can1.device, CAN_RX_FIFO0);
+
+  /* USER CODE END FDCAN1_IT0_IRQn 0 */
+  HAL_FDCAN_IRQHandler(&drv_can1.CanHandle);
+  /* USER CODE BEGIN FDCAN1_IT0_IRQn 1 */
     rt_interrupt_leave();
+
+  /* USER CODE END FDCAN1_IT0_IRQn 1 */
+}
+/**
+  * @brief This function handles FDCAN1 interrupt 1.
+  */
+void FDCAN1_IT1_IRQHandler(void)
+{
+  /* USER CODE BEGIN FDCAN1_IT1_IRQn 0 */
+    rt_interrupt_enter();
+
+  /* USER CODE END FDCAN1_IT1_IRQn 0 */
+  HAL_FDCAN_IRQHandler(&drv_can1.CanHandle);
+  /* USER CODE BEGIN FDCAN1_IT1_IRQn 1 */
+    rt_interrupt_leave();
+
+  /* USER CODE END FDCAN1_IT1_IRQn 1 */
 }
 
-/**
- * @brief This function handles CAN1 RX1 interrupts.
- */
-void CAN1_RX1_IRQHandler(void)
-{
-    rt_interrupt_enter();
-    _can_rx_isr(&drv_can1.device, CAN_RX_FIFO1);
-    rt_interrupt_leave();
-}
-
-/**
- * @brief This function handles CAN1 SCE interrupts.
- */
-void CAN1_SCE_IRQHandler(void)
-{
-    rt_interrupt_enter();
-    _can_sce_isr(&drv_can1.device);
-    rt_interrupt_leave();
-}
 #endif /* BSP_USING_CAN1 */
 
 #ifdef BSP_USING_CAN2
-/**
- * @brief This function handles CAN2 TX interrupts.
- */
-void CAN2_TX_IRQHandler(void)
-{
-    rt_interrupt_enter();
-    _can_tx_isr(&drv_can2.device);
-    rt_interrupt_leave();
-}
+
 
 /**
- * @brief This function handles CAN2 RX0 interrupts.
- */
-void CAN2_RX0_IRQHandler(void)
+  * @brief This function handles FDCAN2 interrupt 0.
+  */
+void FDCAN2_IT0_IRQHandler(void)
 {
+  /* USER CODE BEGIN FDCAN2_IT0_IRQn 0 */
     rt_interrupt_enter();
-    _can_rx_isr(&drv_can2.device, CAN_RX_FIFO0);
+
+  /* USER CODE END FDCAN2_IT0_IRQn 0 */
+  HAL_FDCAN_IRQHandler(&drv_can2.CanHandle);
+  /* USER CODE BEGIN FDCAN2_IT0_IRQn 1 */
     rt_interrupt_leave();
+
+  /* USER CODE END FDCAN2_IT0_IRQn 1 */
 }
 
-/**
- * @brief This function handles CAN2 RX1 interrupts.
- */
-void CAN2_RX1_IRQHandler(void)
-{
-    rt_interrupt_enter();
-    _can_rx_isr(&drv_can2.device, CAN_RX_FIFO1);
-    rt_interrupt_leave();
-}
 
 /**
- * @brief This function handles CAN2 SCE interrupts.
- */
-void CAN2_SCE_IRQHandler(void)
+  * @brief This function handles FDCAN2 interrupt 1.
+  */
+void FDCAN2_IT1_IRQHandler(void)
 {
+  /* USER CODE BEGIN FDCAN2_IT1_IRQn 0 */
     rt_interrupt_enter();
-    _can_sce_isr(&drv_can2.device);
+
+  /* USER CODE END FDCAN2_IT1_IRQn 0 */
+  HAL_FDCAN_IRQHandler(&drv_can2.CanHandle);
+  /* USER CODE BEGIN FDCAN2_IT1_IRQn 1 */
     rt_interrupt_leave();
+
+  /* USER CODE END FDCAN2_IT1_IRQn 1 */
 }
+
+
+
 #endif /* BSP_USING_CAN2 */
 
+
+/**
+  * @brief This function handles FDCAN calibration unit interrupt.
+  */
+void FDCAN_CAL_IRQHandler(void)
+{
+  /* USER CODE BEGIN FDCAN_CAL_IRQn 0 */
+    rt_interrupt_enter();
+
+  /* USER CODE END FDCAN_CAL_IRQn 0 */
+    #ifdef BSP_USING_CAN1
+  HAL_FDCAN_IRQHandler(&drv_can1.CanHandle);
+  #endif
+  #ifdef BSP_USING_CAN2
+
+  HAL_FDCAN_IRQHandler(&drv_can2.CanHandle);
+  #endif
+  /* USER CODE BEGIN FDCAN_CAL_IRQn 1 */
+    rt_interrupt_leave();
+
+  /* USER CODE END FDCAN_CAL_IRQn 1 */
+}
 /**
  * @brief  Error CAN callback.
  * @param  hcan pointer to a CAN_HandleTypeDef structure that contains
@@ -949,7 +971,7 @@ int rt_hw_can_init(void)
     config.ticks = 50;
 #ifdef RT_CAN_USING_HDR
     config.maxhdr = 14;
-#ifdef CAN2
+#ifdef FDCAN2
     config.maxhdr = 28;
 #endif
 #endif
@@ -960,18 +982,18 @@ int rt_hw_can_init(void)
     filterConf.FilterMaskIdHigh = 0x0000;
     filterConf.FilterMaskIdLow = 0x0000;
     filterConf.FilterFIFOAssignment = CAN_FILTER_FIFO0;
-    filterConf.FilterBank = 0;
+    filterConf.FilterIndex = 0;
     filterConf.FilterMode = CAN_FILTERMODE_IDMASK;
     filterConf.FilterScale = CAN_FILTERSCALE_32BIT;
     filterConf.FilterActivation = ENABLE;
     filterConf.SlaveStartFilterBank = 14;
 
 #ifdef BSP_USING_CAN1
-    filterConf.FilterBank = 0;
+    filterConf.FilterIndex = 0;
 
     drv_can1.FilterConfig = filterConf;
     drv_can1.device.config = config;
-    /* register CAN1 device */
+    /* register FDCAN1 device */
     rt_hw_can_register(&drv_can1.device,
                        drv_can1.name,
                        &_can_ops,
@@ -979,11 +1001,11 @@ int rt_hw_can_init(void)
 #endif /* BSP_USING_CAN1 */
 
 #ifdef BSP_USING_CAN2
-    filterConf.FilterBank = filterConf.SlaveStartFilterBank;
+    filterConf.FilterIndex = filterConf.SlaveStartFilterBank;
 
     drv_can2.FilterConfig = filterConf;
     drv_can2.device.config = config;
-    /* register CAN2 device */
+    /* register FDCAN2 device */
     rt_hw_can_register(&drv_can2.device,
                        drv_can2.name,
                        &_can_ops,

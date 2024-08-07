@@ -102,6 +102,9 @@
 #define RT_USING_SERIAL
 #define RT_USING_SERIAL_V2
 #define RT_SERIAL_USING_DMA
+#define RT_USING_CAN
+#define RT_CAN_USING_HDR
+#define RT_CAN_USING_CANFD
 #define RT_USING_I2C
 #define RT_USING_I2C_BITOPS
 #define RT_USING_RTC
@@ -352,6 +355,12 @@
 #define BSP_USING_GPIO
 #define BSP_USING_UART
 #define BSP_USING_UART1
+#define BSP_UART1_RX_USING_DMA
+#define BSP_UART1_TX_USING_DMA
+#define BSP_UART1_RX_BUFSIZE 4096
+#define BSP_UART1_TX_BUFSIZE 0
+#define BSP_USING_CAN
+#define BSP_USING_CAN2
 #define BSP_USING_SPI
 #define BSP_USING_SPI4
 /* end of On-chip Peripheral Drivers */

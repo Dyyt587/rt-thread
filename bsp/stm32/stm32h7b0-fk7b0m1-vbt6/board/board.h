@@ -65,8 +65,7 @@ extern "C" {
  *
  */
 
-#define BSP_UART1_RX_BUFSIZE   256
-#define BSP_UART1_TX_BUFSIZE   256
+
 
 #define STM32_FLASH_START_ADRESS       ROM_START
 #define STM32_FLASH_SIZE               ROM_SIZE
