@@ -22,6 +22,7 @@
 
 #define LOG_TAG    "drv_can"
 #include <drv_log.h>
+#include <stm32h7xx_hal_fdcan.h>
 
 #define BSP_FDCAN_CLOCK 120000000
 #define BSP_USING_CAN2
@@ -501,14 +502,29 @@ static int _can_sendmsg(struct rt_can_device *can, const void *buf, rt_uint32_t 
     FDCAN_HandleTypeDef *hcan;
     hcan = &((struct stm32_can *) can->parent.user_data)->CanHandle;
     struct rt_can_msg *pmsg = (struct rt_can_msg *) buf;
-    CAN_TxHeaderTypeDef txheader = {0};
-    HAL_CAN_StateTypeDef state = hcan->State;
+    FDCAN_TxHeaderTypeDef txheader = {0};
+    HAL_FDCAN_StateTypeDef state = hcan->State;
+
+
+    txheader.Identifier=0x12;                           //32位ID
+    txheader.IdType=FDCAN_STANDARD_ID;                  //标准ID
+    txheader.TxFrameType=FDCAN_DATA_FRAME;              //数据帧
+    txheader.DataLength=pmsg->len;                            //数据长度
+    txheader.ErrorStateIndicator=FDCAN_ESI_ACTIVE;            
+    txheader.BitRateSwitch=FDCAN_BRS_OFF;               //关闭速率切换
+    txheader.FDFormat=FDCAN_CLASSIC_CAN;                //传统的CAN模式
+    txheader.TxEventFifoControl=FDCAN_NO_TX_EVENTS;     //无发送事件
+    txheader.MessageMarker=0;                           
+    
+    if(HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1,&fdcan1_TxHeader,msg)!=HAL_OK) return 1;//发送
+
+
+
 
     /* Check the parameters */
     RT_ASSERT(IS_CAN_DLC(pmsg->len));
 
-    if ((state == HAL_CAN_STATE_READY) ||
-            (state == HAL_CAN_STATE_LISTENING))
+    if ((state == HAL_FDCAN_STATE_READY))
     {
         /*check select mailbox  is empty */
         switch (1 << box_num)
@@ -541,24 +557,24 @@ static int _can_sendmsg(struct rt_can_device *can, const void *buf, rt_uint32_t 
 
         if (RT_CAN_STDID == pmsg->ide)
         {
-            txheader.IDE = CAN_ID_STD;
+            txheader.IdType = FDCAN_STANDARD_ID;
             RT_ASSERT(IS_CAN_STDID(pmsg->id));
-            txheader.StdId = pmsg->id;
+            txheader.Identifier = pmsg->id;
         }
         else
         {
-            txheader.IDE = CAN_ID_EXT;
+            txheader.IdType = FDCAN_EXTENDED_ID;
             RT_ASSERT(IS_CAN_EXTID(pmsg->id));
-            txheader.ExtId = pmsg->id;
+            txheader.Identifier = pmsg->id;
         }
 
         if (RT_CAN_DTR == pmsg->rtr)
         {
-            txheader.RTR = CAN_RTR_DATA;
+            txheader.TxFrameType=FDCAN_DATA_FRAME;              //数据帧
         }
         else
         {
-            txheader.RTR = CAN_RTR_REMOTE;
+            txheader.TxFrameType=FDCAN_REMOTE_FRAME;              //数据帧
         }
         /* clear TIR */
         hcan->Instance->sTxMailBox[box_num].TIR &= CAN_TI0R_TXRQ;
@@ -592,7 +608,7 @@ static int _can_sendmsg(struct rt_can_device *can, const void *buf, rt_uint32_t 
     else
     {
         /* Update error code */
-        hcan->ErrorCode |= HAL_CAN_ERROR_NOT_INITIALIZED;
+        hcan->ErrorCode = READ_REG(hcan->Instance->PSR);
 
         return -RT_ERROR;
     }
@@ -600,6 +616,23 @@ static int _can_sendmsg(struct rt_can_device *can, const void *buf, rt_uint32_t 
 
 static int _can_recvmsg(struct rt_can_device *can, void *buf, rt_uint32_t fifo)
 {
+
+
+
+
+// uint8_t FDCAN1_Receive_Msg(uint8_t *buf, uint16_t *Identifier)
+// {	
+//     if(HAL_FDCAN_GetRxMessage(&hfdcan1,FDCAN_RX_FIFO0,&fdcan1_RxHeader,buf)!=HAL_OK)return 0;//接收数据
+// 	*Identifier = fdcan1_RxHeader.Identifier;
+// 	return fdcan1_RxHeader.DataLength>>16;	
+// }
+
+
+
+
+
+
+
     HAL_StatusTypeDef status;
     CAN_HandleTypeDef *hcan;
     struct rt_can_msg *pmsg;
