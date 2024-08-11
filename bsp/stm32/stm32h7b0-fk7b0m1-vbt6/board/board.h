@@ -23,7 +23,7 @@ extern "C" {
 
 #define CHIP_FAMILY_STM32
 #define CHIP_SERIES_STM32H7
-#define CHIP_NAME_STM32H750XBHX
+#define CHIP_NAME_STM32H7B0XBHX
 
 /*-------------------------- CHIP CONFIG END --------------------------*/
 
@@ -32,7 +32,7 @@ extern "C" {
 #define ROM_SIZE               (128)
 #define ROM_END                ((uint32_t)(ROM_START + ROM_SIZE * 1024))
 
-#define RAM_START              (0x20000000)//DTCM_region
+#define RAM_START              (0x24000000)//DTCM_region
 #define RAM_SIZE               (128)
 #define RAM_END                (RAM_START + RAM_SIZE * 1024)
 
@@ -42,7 +42,7 @@ extern "C" {
 
 #define BSP_CLOCK_SOURCE                  ("HSE")
 #define BSP_CLOCK_SOURCE_FREQ_MHZ         ((int32_t)0)
-#define BSP_CLOCK_SYSTEM_FREQ_MHZ         ((int32_t)480)
+#define BSP_CLOCK_SYSTEM_FREQ_MHZ         ((int32_t)280)
 
 /*-------------------------- CLOCK CONFIG END --------------------------*/
 
@@ -76,8 +76,8 @@ extern "C" {
 #define STM32_SRAM_END                 RAM_END
 
 #if defined(__ARMCC_VERSION)
-extern int Image$$RW_IRAM1$$ZI$$Limit;
-#define HEAP_BEGIN      (&Image$$RW_IRAM1$$ZI$$Limit)
+extern int Image$$RW_IRAM2$$ZI$$Limit;
+#define HEAP_BEGIN      (&Image$$RW_IRAM2$$ZI$$Limit)
 #elif __ICCARM__
 #pragma section="CSTACK"
 #define HEAP_BEGIN      (__segment_end("CSTACK"))

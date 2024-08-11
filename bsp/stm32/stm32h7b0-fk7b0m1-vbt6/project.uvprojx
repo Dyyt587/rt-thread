@@ -329,8 +329,8 @@
             <uC99>1</uC99>
             <uGnu>0</uGnu>
             <useXO>0</useXO>
-            <v6Lang>3</v6Lang>
-            <v6LangP>3</v6LangP>
+            <v6Lang>6</v6Lang>
+            <v6LangP>9</v6LangP>
             <vShortEn>1</vShortEn>
             <vShortWch>1</vShortWch>
             <v6Lto>0</v6Lto>
@@ -338,9 +338,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>STM32H7B0xx, __CLK_TCK=RT_TICK_PER_SECOND, RT_USING_ARMLIBC, __RTTHREAD__, USE_HAL_DRIVER, __STDC_LIMIT_MACROS, RT_USING_LIBC</Define>
+              <Define>RT_USING_LIBC, STM32H7B0xx, __STDC_LIMIT_MACROS, __RTTHREAD__, __PERF_CNT_USE_RTOS__, RT_USING_ARMLIBC, __CLK_TCK=RT_TICK_PER_SECOND, USE_HAL_DRIVER, __perf_counter_printf__=rt_kprintf</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\components\drivers\include;..\..\..\components\libc\compilers\common\include;..\libraries\STM32H7xx_HAL\CMSIS\Device\ST\STM32H7xx\Include;..\..\..\components\dfs\dfs_v1\filesystems\devfs;board\port\lcd;..\..\..\libcpu\arm\common;..\libraries\HAL_Drivers;..\..\..\libcpu\arm\cortex-m7;..\..\..\components\libc\posix\io\poll;..\libraries\HAL_Drivers\drivers\config;..\..\..\components\drivers\include;..\..\..\components\drivers\include;..\..\..\components\drivers\include;applications;..\..\..\components\dfs\dfs_v1\include;..\..\..\components\drivers\spi\sfud\inc;..\..\..\components\drivers\include;..\..\..\components\libc\posix\ipc;board;..\..\..\components\drivers\include;..\libraries\HAL_Drivers\CMSIS\Include;board\port;..\..\..\components\libc\posix\io\eventfd;..\..\..\components\legacy;..\..\..\components\finsh;..\..\..\include;..\..\..\components\drivers\include;.;..\..\..\components\libc\compilers\common\extension;..\..\..\components\legacy\dfs;..\..\..\components\drivers\include;..\..\..\components\libc\compilers\common\extension\fcntl\octal;..\..\..\components\drivers\spi;board\CubeMX_Config\Inc;..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Inc;..\libraries\HAL_Drivers\drivers;..\..\..\components\libc\posix\io\epoll</IncludePath>
+              <IncludePath>..\libraries\HAL_Drivers;..\..\..\components\finsh;packages\perf_counter-v2.2.4.1;..\..\..\components\drivers\include;..\..\..\components\drivers\include;..\..\..\components\drivers\include;..\..\..\components\legacy;.;packages\aUnity-latest;..\..\..\components\drivers\spi\sfud\inc;..\..\..\components\libc\compilers\common\include;..\..\..\components\drivers\include;..\..\..\components\drivers\include;board\CubeMX_Config\Inc;applications;..\..\..\components\drivers\include;..\libraries\HAL_Drivers\CMSIS\Include;applications\motor;..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Inc;..\libraries\STM32H7xx_HAL\CMSIS\Device\ST\STM32H7xx\Include;packages\APID-latest\src;..\..\..\components\drivers\include;packages\aUnity-latest\alist;packages\aUnity-latest\afifo;..\..\..\components\dfs\dfs_v1\filesystems\devfs;..\..\..\components\drivers\include;board;packages\aUnity-latest\acheck;..\libraries\HAL_Drivers\drivers;..\..\..\components\libc\posix\io\eventfd;..\..\..\components\libc\compilers\common\extension;..\..\..\components\libc\posix\io\epoll;..\libraries\HAL_Drivers\drivers\config;..\..\..\libcpu\arm\cortex-m7;..\..\..\components\libc\compilers\common\extension\fcntl\octal;..\..\..\components\utilities\ulog;board\port;..\..\..\libcpu\arm\common;..\..\..\components\libc\posix\io\poll;packages\aUnity-latest\cvector;..\..\..\include;..\..\..\components\drivers\spi;..\..\..\components\legacy\dfs;..\..\..\components\dfs\dfs_v1\include;..\..\..\components\libc\posix\ipc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -382,12 +382,87 @@
       </TargetOption>
       <Groups>
         <Group>
+          <GroupName>apid</GroupName>
+          <Files>
+            <File>
+              <FileName>apid_exfunc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\APID-latest\src\apid_exfunc.c</FilePath>
+            </File>
+            <File>
+              <FileName>apid_ex_fuzzy.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\APID-latest\src\apid_ex_fuzzy.c</FilePath>
+            </File>
+            <File>
+              <FileName>apid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\APID-latest\src\apid.c</FilePath>
+            </File>
+            <File>
+              <FileName>apid_auto_tune_ZNmode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\APID-latest\src\apid_auto_tune_ZNmode.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Applications</GroupName>
           <Files>
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>Trajectory_planning.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\motor\Trajectory_planning.c</FilePath>
+            </File>
+            <File>
+              <FileName>motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\motor\motor.c</FilePath>
+            </File>
+            <File>
+              <FileName>motor_cfg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\motor\motor_cfg.c</FilePath>
+            </File>
+            <File>
+              <FileName>motor_dj_rm_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\motor\motor_dj_rm_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>motor_mit_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\motor\motor_mit_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>motor_planning.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\motor\motor_planning.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>aUnity</GroupName>
+          <Files>
+            <File>
+              <FileName>all_check.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\aUnity-latest\acheck\all_check.c</FilePath>
+            </File>
+            <File>
+              <FileName>cvector.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\aUnity-latest\cvector\cvector.c</FilePath>
+            </File>
+            <File>
+              <FileName>afifo.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\aUnity-latest\afifo\afifo.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1748,72 +1823,6 @@
               <FilePath>board\board.c</FilePath>
             </File>
             <File>
-              <FileName>drv_lcd_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>board\port\lcd\drv_lcd_spi.c</FilePath>
-            </File>
-            <File>
-              <FileName>drv_lcd_spi_ext.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>board\port\lcd\drv_lcd_spi_ext.c</FilePath>
-            </File>
-            <File>
-              <FileName>drv_can.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\libraries\HAL_Drivers\drivers\drv_can.c</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>0</IncludeInBuild>
-                  <AlwaysBuild>2</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Cads>
-                    <interw>2</interw>
-                    <Optim>0</Optim>
-                    <oTime>2</oTime>
-                    <SplitLS>2</SplitLS>
-                    <OneElfS>2</OneElfS>
-                    <Strict>2</Strict>
-                    <EnumInt>2</EnumInt>
-                    <PlainCh>2</PlainCh>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <wLevel>0</wLevel>
-                    <uThumb>2</uThumb>
-                    <uSurpInc>2</uSurpInc>
-                    <uC99>2</uC99>
-                    <uGnu>2</uGnu>
-                    <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
-                    <vShortEn>2</vShortEn>
-                    <vShortWch>2</vShortWch>
-                    <v6Lto>2</v6Lto>
-                    <v6WtE>2</v6WtE>
-                    <v6Rtti>2</v6Rtti>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define></Define>
-                      <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Cads>
-                </FileArmAds>
-              </FileOption>
-            </File>
-            <File>
               <FileName>drv_fdcan.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\libraries\HAL_Drivers\drivers\drv_fdcan.c</FilePath>
@@ -1879,6 +1888,21 @@
           <GroupName>Finsh</GroupName>
           <Files>
             <File>
+              <FileName>msh_parse.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\components\finsh\msh_parse.c</FilePath>
+            </File>
+            <File>
+              <FileName>msh.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\components\finsh\msh.c</FilePath>
+            </File>
+            <File>
+              <FileName>cmd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\components\finsh\cmd.c</FilePath>
+            </File>
+            <File>
               <FileName>msh_file.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\components\finsh\msh_file.c</FilePath>
@@ -1887,21 +1911,6 @@
               <FileName>shell.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\components\finsh\shell.c</FilePath>
-            </File>
-            <File>
-              <FileName>msh_parse.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\components\finsh\msh_parse.c</FilePath>
-            </File>
-            <File>
-              <FileName>cmd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\components\finsh\cmd.c</FilePath>
-            </File>
-            <File>
-              <FileName>msh.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\components\finsh\msh.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2850,9 +2859,9 @@
           <GroupName>Libraries</GroupName>
           <Files>
             <File>
-              <FileName>stm32h7xx_hal_rng.c</FileName>
+              <FileName>stm32h7xx_hal_uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_rng.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_uart.c</FilePath>
             </File>
             <File>
               <FileName>stm32h7xx_hal_pwr_ex.c</FileName>
@@ -2860,14 +2869,14 @@
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_pwr_ex.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_cryp.c</FileName>
+              <FileName>stm32h7xx_hal_crc_ex.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_cryp.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_crc_ex.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_usart.c</FileName>
+              <FileName>stm32h7xx_hal_gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_usart.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_gpio.c</FilePath>
             </File>
             <File>
               <FileName>stm32h7xx_hal_crc.c</FileName>
@@ -2875,24 +2884,44 @@
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_crc.c</FilePath>
             </File>
             <File>
+              <FileName>stm32h7xx_hal_cortex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_cortex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32h7xx_hal_pwr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_pwr.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32h7xx_hal_uart_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_uart_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32h7xx_hal_mdma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_mdma.c</FilePath>
+            </File>
+            <File>
               <FileName>system_stm32h7xx.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\libraries\STM32H7xx_HAL\CMSIS\Device\ST\STM32H7xx\Source\Templates\system_stm32h7xx.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_i2c_ex.c</FileName>
+              <FileName>stm32h7xx_hal_usart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_i2c_ex.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_usart.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_cec.c</FileName>
+              <FileName>stm32h7xx_hal_sram.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_cec.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_sram.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_crc_ex.c</FileName>
+              <FileName>stm32h7xx_hal_cryp.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_crc_ex.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_cryp.c</FilePath>
             </File>
             <File>
               <FileName>stm32h7xx_hal_dma.c</FileName>
@@ -2900,14 +2929,14 @@
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_dma.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_cryp_ex.c</FileName>
+              <FileName>stm32h7xx_hal_qspi.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_cryp_ex.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_qspi.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_gpio.c</FileName>
+              <FileName>stm32h7xx_hal_comp.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_gpio.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_comp.c</FilePath>
             </File>
             <File>
               <FileName>stm32h7xx_hal_fdcan.c</FileName>
@@ -2920,39 +2949,19 @@
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_rcc_ex.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_uart.c</FileName>
+              <FileName>stm32h7xx_hal_rng.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_uart.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_rng.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_uart_ex.c</FileName>
+              <FileName>stm32h7xx_hal_cryp_ex.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_uart_ex.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_cryp_ex.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_dma_ex.c</FileName>
+              <FileName>stm32h7xx_hal_cec.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_dma_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32h7xx_hal_pwr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_pwr.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32h7xx_hal_cortex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_cortex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32h7xx_hal_rtc_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_rtc_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32h7xx_hal_sram.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_sram.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_cec.c</FilePath>
             </File>
             <File>
               <FileName>stm32h7xx_hal_rcc.c</FileName>
@@ -2960,29 +2969,29 @@
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_rcc.c</FilePath>
             </File>
             <File>
+              <FileName>stm32h7xx_hal_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32h7xx_hal_rtc_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_rtc_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32h7xx_hal_dma_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_dma_ex.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32h7xx_hal.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_mdma.c</FileName>
+              <FileName>stm32h7xx_hal_i2c_ex.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_mdma.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32h7xx_hal_i2c.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_i2c.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32h7xx_hal_comp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_comp.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32h7xx_hal_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_spi.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_i2c_ex.c</FilePath>
             </File>
             <File>
               <FileName>stm32h7xx_hal_rtc.c</FileName>
@@ -2990,9 +2999,39 @@
               <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_rtc.c</FilePath>
             </File>
             <File>
-              <FileName>stm32h7xx_hal_qspi.c</FileName>
+              <FileName>stm32h7xx_hal_i2c.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_qspi.c</FilePath>
+              <FilePath>..\libraries\STM32H7xx_HAL\STM32H7xx_HAL_Driver\Src\stm32h7xx_hal_i2c.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>perf_counter</GroupName>
+          <Files>
+            <File>
+              <FileName>perf_counter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\perf_counter-v2.2.4.1\perf_counter.c</FilePath>
+            </File>
+            <File>
+              <FileName>perf_os_patch_rt_thread.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\perf_counter-v2.2.4.1\os\perf_os_patch_rt_thread.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Utilities</GroupName>
+          <Files>
+            <File>
+              <FileName>ulog.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\components\utilities\ulog\ulog.c</FilePath>
+            </File>
+            <File>
+              <FileName>console_be.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\components\utilities\ulog\backend\console_be.c</FilePath>
             </File>
           </Files>
         </Group>

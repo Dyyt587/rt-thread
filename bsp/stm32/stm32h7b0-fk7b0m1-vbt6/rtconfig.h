@@ -153,6 +153,26 @@
 
 /* Utilities */
 
+#define RT_USING_ULOG
+#define ULOG_OUTPUT_LVL_D
+#define ULOG_OUTPUT_LVL 7
+#define ULOG_USING_ISR_LOG
+#define ULOG_ASSERT_ENABLE
+#define ULOG_LINE_BUF_SIZE 128
+#define ULOG_USING_ASYNC_OUTPUT
+#define ULOG_ASYNC_OUTPUT_BUF_SIZE 2048
+#define ULOG_ASYNC_OUTPUT_BY_THREAD
+#define ULOG_ASYNC_OUTPUT_THREAD_STACK 1024
+#define ULOG_ASYNC_OUTPUT_THREAD_PRIORITY 30
+
+/* log format */
+
+#define ULOG_USING_COLOR
+#define ULOG_OUTPUT_TIME
+#define ULOG_OUTPUT_LEVEL
+#define ULOG_OUTPUT_TAG
+/* end of log format */
+#define ULOG_BACKEND_USING_CONSOLE
 /* end of Utilities */
 
 /* Using USB legacy version */
@@ -232,6 +252,8 @@
 /* enhanced kernel services */
 
 /* end of enhanced kernel services */
+#define PKG_USING_AUNITY
+#define PKG_USING_AUNITY_LATEST_VERSION
 
 /* acceleration: Assembly language or algorithmic acceleration packages */
 
@@ -244,6 +266,9 @@
 /* Micrium: Micrium software products porting for RT-Thread */
 
 /* end of Micrium: Micrium software products porting for RT-Thread */
+#define PKG_USING_PERF_COUNTER
+#define PKG_PERF_COUNTER_USING_THREAD_STATISTIC
+#define PKG_USING_PERF_COUNTER_V2241
 /* end of system packages */
 
 /* peripheral libraries and drivers */
@@ -278,6 +303,8 @@
 
 /* Signal Processing and Control Algorithm Packages */
 
+#define PKG_USING_APID
+#define PKG_USING_APID_LATEST_VERSION
 /* end of Signal Processing and Control Algorithm Packages */
 
 /* miscellaneous packages */
@@ -347,7 +374,6 @@
 
 /* Onboard Peripheral Drivers */
 
-#define BSP_USING_LCD_SPI
 /* end of Onboard Peripheral Drivers */
 
 /* On-chip Peripheral Drivers */
@@ -355,15 +381,12 @@
 #define BSP_USING_GPIO
 #define BSP_USING_UART
 #define BSP_USING_UART1
-#define BSP_UART1_RX_USING_DMA
 #define BSP_UART1_TX_USING_DMA
 #define BSP_UART1_RX_BUFSIZE 4096
-#define BSP_UART1_TX_BUFSIZE 0
+#define BSP_UART1_TX_BUFSIZE 4096
 #define BSP_USING_FDCAN
 #define BSP_FDCAN_CLOCK 120000000
 #define BSP_USING_CAN2
-#define BSP_USING_SPI
-#define BSP_USING_SPI4
 /* end of On-chip Peripheral Drivers */
 
 /* Board extended module Drivers */

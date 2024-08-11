@@ -12,7 +12,7 @@
 
 // #define RT_USING_CAN
 // #define BSP_USING_CAN
-// #define BSP_USING_FDCAN1
+ #define BSP_USING_FDCAN2
 
 
 
@@ -26,8 +26,14 @@
 #include <rtdevice.h>
 
 
-#define BSP_FDCAN_CLOCK 120000000
-#define BSP_USING_CAN2
+#define RT_CAN_MODE_NORMAL              0
+#define RT_CAN_MODE_LISTEN              1
+#define RT_CAN_MODE_LOOPBACK            2
+#define RT_CAN_MODE_LOOPBACKANLISTEN    3
+
+
+//#define BSP_FDCAN_CLOCK 120000000
+//#define BSP_USING_CAN2
 
 #ifndef BSP_FDCAN_CLOCK
 #error please define BSP_FDCAN_CLOCK in rtconfig.h to calculate the baud rate.
@@ -174,6 +180,34 @@ static rt_err_t _can_config(struct rt_can_device *can, struct can_configure *cfg
 
     return RT_EOK;
 }
+static rt_err_t _inline_can_filter_config(struct stm32_can *pdrv_can,struct rt_can_filter_config *puser_can_filter_config)
+{
+	int tmp_i32IndexCount;
+	RT_ASSERT(pdrv_can);
+	RT_ASSERT(puser_can_filter_config);
+	 /* get default filter */
+	for (tmp_i32IndexCount = 0; tmp_i32IndexCount < puser_can_filter_config->count; tmp_i32IndexCount++)
+	{
+		pdrv_can->FilterConfig.FilterIndex = puser_can_filter_config->items[tmp_i32IndexCount].hdr_bank;
+		pdrv_can->FilterConfig.FilterID1 = puser_can_filter_config->items[tmp_i32IndexCount].id;
+		pdrv_can->FilterConfig.FilterID2 = puser_can_filter_config->items[tmp_i32IndexCount].mask;
+		if(puser_can_filter_config->items[tmp_i32IndexCount].ide == RT_CAN_EXTID)
+		{
+			pdrv_can->FilterConfig.IdType = FDCAN_EXTENDED_ID;
+		}
+		else
+		{
+			pdrv_can->FilterConfig.IdType = FDCAN_STANDARD_ID;
+		}
+		pdrv_can->FilterConfig.FilterType = FDCAN_FILTER_MASK;
+		pdrv_can->FilterConfig.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+		if(HAL_FDCAN_ConfigFilter(&pdrv_can->CanHandle , &pdrv_can->FilterConfig) != HAL_OK)
+		{
+			return -RT_ERROR;
+		}
+	}
+	return RT_EOK;
+}
 
 static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
 {
@@ -285,16 +319,16 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
 	case RT_CAN_CMD_SET_MODE:
 		argval = (rt_uint32_t) arg;
 		if (argval != RT_CAN_MODE_NORMAL &&
-			argval != RT_CAN_MODE_LISEN &&
+			argval != RT_CAN_MODE_LISTEN &&
 			argval != RT_CAN_MODE_LOOPBACK &&
-			argval != RT_CAN_MODE_LOOPBACKANLISEN)
+			argval != RT_CAN_MODE_LOOPBACKANLISTEN)
 		{
 			return -RT_ERROR;
 		}
 		if (argval != pdrv_can->device.config.mode)
 		{
 			pdrv_can->device.config.mode = argval;
-			return _inline_can_config(&pdrv_can->device, &pdrv_can->device.config);
+			return _can_config(&pdrv_can->device, &pdrv_can->device.config);
 		}
 		break;
 	case RT_CAN_CMD_SET_BAUD:
@@ -315,7 +349,7 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
 		if (argval != pdrv_can->device.config.baud_rate)
 		{
 			pdrv_can->device.config.baud_rate = argval;
-			return _inline_can_config(&pdrv_can->device, &pdrv_can->device.config);
+			return _can_config(&pdrv_can->device, &pdrv_can->device.config);
 		}
 		break;
 
@@ -343,14 +377,7 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
         pdrv_can->device.status.rcverrcnt = ErrorCounters.RxErrorCnt+(ErrorCounters.RxErrorPassive<<8);
         pdrv_can->device.status.snderrcnt = ErrorCounters.TxErrorCnt;
         pdrv_can->device.status.lasterrtype = ProtocolStatus.LastErrorCode;
-        pdrv_can->device.status.errcode = READ_REG(drv_can->CanHandle.Instance->PSR);
-
-        // rt_uint32_t errtype;
-        // errtype = drv_can->CanHandle.Instance->ESR;
-        // drv_can->device.status.rcverrcnt = errtype >> 24;
-        // drv_can->device.status.snderrcnt = (errtype >> 16 & 0xFF);
-        // drv_can->device.status.lasterrtype = errtype & 0x70;
-        // drv_can->device.status.errcode = errtype & 0x07;
+        pdrv_can->device.status.errcode = READ_REG(pdrv_can->CanHandle.Instance->PSR);
 
         rt_memcpy(arg, &pdrv_can->device.status, sizeof(pdrv_can->device.status));
     }
@@ -360,7 +387,7 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
     return RT_EOK;
 }
 
-static int _can_sendmsg(struct rt_can_device *can, const void *buf, rt_uint32_t box_num)
+static rt_ssize_t _can_sendmsg(struct rt_can_device *can, const void *buf, rt_uint32_t box_num)
 {
 
     struct stm32_can *pdrv_can;
@@ -369,7 +396,7 @@ static int _can_sendmsg(struct rt_can_device *can, const void *buf, rt_uint32_t 
 	RT_ASSERT(can);
 	RT_ASSERT(buf);
 
-	pdrv_can = (_stm32_fdcan_t *)can->parent.user_data;
+	pdrv_can = (struct stm32_can *)can->parent.user_data;
 
 	RT_ASSERT(pdrv_can);
 
@@ -417,7 +444,7 @@ static int _can_sendmsg(struct rt_can_device *can, const void *buf, rt_uint32_t 
 	}
 }
 
-static int _can_recvmsg(struct rt_can_device *can, void *buf, rt_uint32_t fifo)
+static rt_ssize_t _can_recvmsg(struct rt_can_device *can, void *buf, rt_uint32_t fifo)
 {
 
 
@@ -456,7 +483,7 @@ static int _can_recvmsg(struct rt_can_device *can, void *buf, rt_uint32_t fifo)
 
     	pmsg->len = (pdrv_can->RxHeader.DataLength>>16)&0x0f;
 
-    	pmsg->hdr = pdrv_can->RxHeader.FilterIndex;
+    	pmsg->hdr_index = pdrv_can->RxHeader.FilterIndex;
     	return RT_EOK;
     }
 }
@@ -487,7 +514,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
 #ifdef BSP_USING_FDCAN2
 			//CAN2
 			/* Retreive Rx messages from RX FIFO0 */
-			rt_hw_can_isr(&st_DrvCan2.device, RT_CAN_EVENT_RX_IND | 0 << 8);
+			rt_hw_can_isr(&drv_can2.device, RT_CAN_EVENT_RX_IND | 0 << 8);
 #endif
 		}
 	}
@@ -506,7 +533,7 @@ void HAL_FDCAN_TxBufferCompleteCallback(FDCAN_HandleTypeDef *hfdcan, uint32_t Bu
 	{
 #ifdef BSP_USING_FDCAN2
 		//can2
-		rt_hw_can_isr(&st_DrvCan2.device, RT_CAN_EVENT_TX_DONE | ((BufferIndexes-1) << 8));
+		rt_hw_can_isr(&drv_can2.device, RT_CAN_EVENT_TX_DONE | ((BufferIndexes-1) << 8));
 #endif
 	}
 
@@ -566,16 +593,16 @@ void HAL_FDCAN_ErrorCallback(FDCAN_HandleTypeDef *hfdcan)
 		{
 			//hfdcan->Instance->CCCR |= FDCAN_CCCR_CCE_Msk;
 			hfdcan->Instance->CCCR &= ~FDCAN_CCCR_INIT_Msk;
-			st_DrvCan2.device.status.errcode = 0xff;
+			drv_can2.device.status.errcode = 0xff;
 		}
 		else
 		{
 			//can2
-			tmp_u32Errcount = st_DrvCan2.CanHandle.Instance->ECR;
-			tmp_u32status = st_DrvCan2.CanHandle.Instance->PSR;
-			st_DrvCan2.device.status.rcverrcnt = (tmp_u32Errcount>>8)&0x000000ff;
-			st_DrvCan2.device.status.snderrcnt = (tmp_u32Errcount)&0x000000ff;
-			st_DrvCan2.device.status.lasterrtype = tmp_u32status&0x000000007;
+			tmp_u32Errcount = drv_can2.CanHandle.Instance->ECR;
+			tmp_u32status = drv_can2.CanHandle.Instance->PSR;
+			drv_can2.device.status.rcverrcnt = (tmp_u32Errcount>>8)&0x000000ff;
+			drv_can2.device.status.snderrcnt = (tmp_u32Errcount)&0x000000ff;
+			drv_can2.device.status.lasterrtype = tmp_u32status&0x000000007;
 		}
 #endif /*BSP_USING_FDCAN2*/
 	}
@@ -712,7 +739,7 @@ void FDCAN_CAL_IRQHandler(void)
 int rt_hw_can_init(void)
 {
     struct can_configure config = CANDEFAULTCONFIG;
-    config.baud_rate = CAN250kBaud;
+    config.baud_rate = CAN500kBaud;
     config.msgboxsz = 48;
     config.sndboxnumber = 1;
     config.mode = RT_CAN_MODE_NORMAL;
