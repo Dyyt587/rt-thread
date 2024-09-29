@@ -34,7 +34,7 @@ extern "C"
 #define MOTOR_OPS_CURVE_INIT() (&((CurveObjectType){.aTimes=0,\
 }))
 
-	#define MOTOR_DJ_MOTOR 1
+	#define MOTOR_DJ_MOTOR 0
   #define MOTOR_EMM_V5_MOTOR 0
   #define MOTOR_MIT_MOTOR 1
     /**
@@ -44,7 +44,7 @@ extern "C"
 # if MOTOR_MIT_MOTOR
      #define MOTOR_MIT_ID1_CAN1
      #define MOTOR_MIT_ID2_CAN1
-     #define MOTOR_MIT_ID3_CAN1
+//     #define MOTOR_MIT_ID3_CAN1
 #endif
 #if MOTOR_DJ_MOTOR
      #define MOTOR_DJ_M3508_ID1_CAN1

@@ -152,7 +152,7 @@ int main(void)
 		uint8_t msg[8] = {1,1,1,1,1};
 		
 		FDCAN1_Send_Msg(msg,sizeof(msg));
-		HAL_Delay(100);
+		HAL_Delay(1);
   }
   /* USER CODE END 3 */
 }

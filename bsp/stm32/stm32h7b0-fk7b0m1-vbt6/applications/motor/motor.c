@@ -20,10 +20,14 @@
 
 static int motor_id = 0; // 用于分配电机id
 
+
+#define MOTOR_ASSERT RT_ASSERT
+#ifndef MOTOR_ASSERT
 #define MOTOR_ASSERT(x) \
     if (!(x))           \
         while (1)       \
             ;
+#endif
                          // 电机操作函数的
 #define MOTOR_ASSERT_ID(id) \
     if (id >= MOTOR_NUM)    \

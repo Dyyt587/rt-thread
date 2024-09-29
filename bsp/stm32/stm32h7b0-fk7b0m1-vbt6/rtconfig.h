@@ -34,14 +34,10 @@
 
 #define RT_USING_SEMAPHORE
 #define RT_USING_MUTEX
-#define RT_USING_EVENT
-#define RT_USING_MAILBOX
-#define RT_USING_MESSAGEQUEUE
 /* end of Inter-Thread communication */
 
 /* Memory Management */
 
-#define RT_USING_MEMPOOL
 #define RT_USING_MEMHEAP
 #define RT_MEMHEAP_FAST_MODE
 #define RT_USING_MEMHEAP_AS_HEAP
@@ -105,16 +101,6 @@
 #define RT_USING_CAN
 #define RT_CAN_USING_HDR
 #define RT_CAN_USING_CANFD
-#define RT_USING_I2C
-#define RT_USING_I2C_BITOPS
-#define RT_USING_RTC
-#define RT_USING_SPI
-#define RT_USING_QSPI
-#define RT_USING_SFUD
-#define RT_SFUD_USING_SFDP
-#define RT_SFUD_USING_FLASH_INFO_TABLE
-#define RT_SFUD_USING_QSPI
-#define RT_SFUD_SPI_MAX_HZ 10000000
 #define RT_USING_PIN
 /* end of Device Drivers */
 

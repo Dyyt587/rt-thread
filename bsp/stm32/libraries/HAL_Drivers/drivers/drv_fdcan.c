@@ -14,7 +14,7 @@
 // #define BSP_USING_CAN
  #define BSP_USING_FDCAN2
 
-
+#define BSP_USING_FDCAN
 
 
 #ifdef BSP_USING_FDCAN
@@ -739,12 +739,13 @@ void FDCAN_CAL_IRQHandler(void)
 int rt_hw_can_init(void)
 {
     struct can_configure config = CANDEFAULTCONFIG;
-    config.baud_rate = CAN500kBaud;
+    config.baud_rate = CAN1MBaud;
     config.msgboxsz = 48;
     config.sndboxnumber = 1;
     config.mode = RT_CAN_MODE_NORMAL;
-    config.privmode = RT_CAN_MODE_NOPRIV;
+    config.privmode = 0;//RT_CAN_MODE_NOPRIV;
     config.ticks = 50;
+		config.maxhdr = 128;
      /* config default filter */
     FDCAN_FilterTypeDef sFilterConfig;
     sFilterConfig.IdType = FDCAN_STANDARD_ID;

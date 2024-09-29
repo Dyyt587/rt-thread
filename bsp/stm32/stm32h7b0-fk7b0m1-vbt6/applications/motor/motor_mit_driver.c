@@ -27,7 +27,28 @@ uint32_t FloatTohex(float HEX) //??????????
 }
 void canx_send_data(rt_device_t hcan,uint32_t id,uint8_t* data, uint8_t size)
 {
+		struct rt_can_msg msg;
+    msg.id = 0x78;              /* ID 为 0x78 */
+    msg.ide = RT_CAN_STDID;     /* 标准格式 */
+    msg.rtr = RT_CAN_DTR;       /* 数据帧 */
+    msg.len = 8;                /* 数据长度为 8 */
 
+    /* 待发送的 8 字节数据 */
+		int i=0;
+		for(i=0;i<size;++i){
+		   msg.data[i] = data[i];
+		}
+		
+		for(;i<8;++i){
+		   msg.data[i] = 0;
+		}
+    /* 发送一帧 CAN 数据 */
+    size = rt_device_write(hcan, 0, &msg, sizeof(msg));
+
+    if (size == 0)
+    {
+        rt_kprintf("can dev write data failed!\n");
+    }
 
 }
 
@@ -299,7 +320,7 @@ int motor_mit_ctr(int id, uint16_t cmd, float *data)
 {
     motor_t *motor               = motor_get(id);
     mit_motor_measure_t *__motor = (mit_motor_measure_t *)motor->ops->user_data;
-    LOG_D("not used");
+    //LOG_D("not used");
     switch (cmd) {
 
         case MOTOR_MODE_SAFETY_STOP:
@@ -392,8 +413,12 @@ rt_err_t ind_mit_can_motor_callback(rt_device_t dev, void *args, rt_int32_t hdr,
      LOG_D("ID:%x ", rxmsg.id);
 
     mit_motor_measure_t *motor_measure = mit_motor_get_by_rxcanid(rxmsg.id);
-	mit_read_data(motor_measure,rxmsg.data,rxmsg.len);
-   	motor_measure->connect_level=0;
+		if(motor_measure){
+			mit_read_data(motor_measure,rxmsg.data,rxmsg.len);
+			motor_measure->connect_level=0;
+		}
+
+		
     // rt_sem_release(&rx_sem);
 
     // int8_t tt = rt_mb_send(dj_m_mailbox, id);
@@ -430,8 +455,7 @@ static void can_rx_thread(void *parameter)
 				motor_handle(i, 1);
 			}
 		}
-
-        stepDo(100,LOG_D("run!"));
+		motor_start(0);
 		//rt_thread_delay_until(rt_tick_get(),1);
 		rt_thread_mdelay(1);
 
@@ -444,7 +468,8 @@ static void can_rx_thread(void *parameter)
         last_time = get_system_ms();
         // rt_pin_write(GET_PIN(I, 2), 1 - rt_pin_read(GET_PIN(I, 2)));
     }
-}
+	}
+
 
 int motor_mit_init(void)
 {
@@ -475,8 +500,8 @@ int motor_mit_init(void)
     res = rt_device_control(can2_dev, RT_CAN_CMD_SET_BAUD, (void *)CAN1MBaud);
 
     RT_ASSERT(res == RT_EOK);
-    res = rt_device_control(can2_dev, RT_CAN_CMD_SET_PRIV, (void *)1);
-    RT_ASSERT(res == RT_EOK);
+//    res = rt_device_control(can2_dev, RT_CAN_CMD_SET_PRIV, (void *)1);
+//    RT_ASSERT(res == RT_EOK);
 
 
     /* 创建数据接收线程 */

@@ -4,7 +4,7 @@
 
 
 #include "motor_dj_rm_driver_cfg.h"
-#include "motor_emm_v5_driver_cfg.h"
+//#include "motor_emm_v5_driver_cfg.h"
 #include "motor_mit_driver_cfg.h"
 
 

@@ -2,7 +2,7 @@
  * @Author: Dyyt587 67887002+Dyyt587@users.noreply.github.com
  * @Date: 2024-06-19 18:15:02
  * @LastEditors: Dyyt587 67887002+Dyyt587@users.noreply.github.com
- * @LastEditTime: 2024-06-19 19:46:39
+ * @LastEditTime: 2024-08-20 18:03:11
  * @FilePath: \project\applications\motor_dj_rm_driver_cfg.h
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,6 +14,16 @@
 #ifdef __cplusplus
 extern "C"{
 #endif
+
+
+
+
+
+
+
+
+
+
     /**
      * @brief 电机抽象层电机操作函数定义
      */
