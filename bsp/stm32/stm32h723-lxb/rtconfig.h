@@ -108,11 +108,6 @@
 #define RT_USING_PIN
 #define RT_USING_KTIME
 #define RT_USING_CHERRYUSB
-#define RT_CHERRYUSB_DEVICE
-#define RT_CHERRYUSB_DEVICE_SPEED_AUTO
-#define RT_CHERRYUSB_DEVICE_DWC2_ST
-#define RT_CHERRYUSB_DEVICE_CDC_ACM
-#define RT_CHERRYUSB_DEVICE_TEMPLATE_CDC_ACM
 /* end of Device Drivers */
 
 /* C/C++ and POSIX layer */
@@ -175,6 +170,7 @@
 
 /* Using USB legacy version */
 
+#define RT_USING_USB
 /* end of Using USB legacy version */
 /* end of RT-Thread Components */
 
@@ -368,9 +364,14 @@
 /* On-chip Peripheral Drivers */
 
 #define BSP_USING_GPIO
+#define BSP_USING_USB
 #define BSP_USING_UART
 #define BSP_USING_UART1
 #define BSP_UART1_RX_USING_DMA
+#define BSP_USING_UART3
+#define BSP_UART3_RX_USING_DMA
+#define BSP_USING_UART2
+#define BSP_UART2_RX_USING_DMA
 /* end of On-chip Peripheral Drivers */
 
 /* Board extended module Drivers */

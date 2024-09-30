@@ -29,21 +29,22 @@ extern "C" {
 #endif
 
 /* DMA1 stream1 */
-#if defined(BSP_UART2_TX_USING_DMA) && !defined(UART2_TX_DMA_INSTANCE)
-#define UART2_DMA_TX_IRQHandler          DMA1_Stream1_IRQHandler
-#define UART2_TX_DMA_RCC                 RCC_AHB1ENR_DMA1EN
-#define UART2_TX_DMA_INSTANCE            DMA1_Stream1
-#define UART2_TX_DMA_REQUEST             DMA_REQUEST_USART2_TX
-#define UART2_TX_DMA_IRQ                 DMA1_Stream1_IRQn
+#if defined(BSP_UART2_RX_USING_DMA) && !defined(UART2_RX_DMA_INSTANCE)
+#define UART2_DMA_RX_IRQHandler          DMA1_Stream1_IRQHandler
+#define UART2_RX_DMA_RCC                 RCC_AHB1ENR_DMA1EN
+#define UART2_RX_DMA_INSTANCE            DMA1_Stream1
+#define UART2_RX_DMA_REQUEST             DMA_REQUEST_USART2_RX
+#define UART2_RX_DMA_IRQ                 DMA1_Stream1_IRQn
 #endif
 
 /* DMA1 stream2 */
-#if defined(BSP_SPI3_RX_USING_DMA) && !defined(SPI3_RX_DMA_INSTANCE)
-#define SPI3_DMA_RX_IRQHandler           DMA1_Stream2_IRQHandler
-#define SPI3_RX_DMA_RCC                  RCC_AHB1ENR_DMA1EN
-#define SPI3_RX_DMA_INSTANCE             DMA1_Stream2
-#define SPI3_RX_DMA_IRQ                  DMA1_Stream2_IRQn
-#endif
+#if defined(BSP_UART3_RX_USING_DMA) && !defined(UART3_RX_DMA_INSTANCE)
+#define UART3_DMA_TX_IRQHandler          DMA1_Stream2_IRQHandler
+#define UART3_RX_DMA_RCC                 RCC_AHB1ENR_DMA1EN
+#define UART3_RX_DMA_INSTANCE            DMA1_Stream2
+#define UART3_RX_DMA_REQUEST             DMA_REQUEST_USART3_RX
+#define UART3_RX_DMA_IRQ                 DMA1_Stream2_IRQn
+#endif  
 
 /* DMA1 stream3 */
 #if defined(BSP_SPI2_RX_USING_DMA) && !defined(SPI2_RX_DMA_INSTANCE)

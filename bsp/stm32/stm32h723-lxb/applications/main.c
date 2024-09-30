@@ -11,8 +11,14 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <board.h>
+#include <rtdbg.h>
 
-
+static void atcmd(int argc, char**argv)
+{
+  LOG_D("euifhei %s ", argv[1]); 
+}
+ 
+MSH_CMD_EXPORT(atcmd, atcmd sample: atcmd <server|client>);
 /* defined the LED0 pin: PG7 */
 #define LED0_PIN    GET_PIN(G, 7)
 

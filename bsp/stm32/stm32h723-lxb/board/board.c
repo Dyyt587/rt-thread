@@ -9,10 +9,92 @@
  */
 
 #include "board.h"
+#include "board.h"
+#include "stm32h7xx_it.h"
+
+extern PCD_HandleTypeDef hpcd_USB_OTG_HS;
 /**
-  * @brief System Clock Configuration
+  * @brief This function handles USB On The Go HS End Point 1 Out global interrupt.
+  */
+void OTG_HS_EP1_OUT_IRQHandler(void)
+{
+  /* USER CODE BEGIN OTG_HS_EP1_OUT_IRQn 0 */
+
+  /* USER CODE END OTG_HS_EP1_OUT_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG_HS);
+  /* USER CODE BEGIN OTG_HS_EP1_OUT_IRQn 1 */
+
+  /* USER CODE END OTG_HS_EP1_OUT_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USB On The Go HS End Point 1 In global interrupt.
+  */
+void OTG_HS_EP1_IN_IRQHandler(void)
+{
+  /* USER CODE BEGIN OTG_HS_EP1_IN_IRQn 0 */
+
+  /* USER CODE END OTG_HS_EP1_IN_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG_HS);
+  /* USER CODE BEGIN OTG_HS_EP1_IN_IRQn 1 */
+
+  /* USER CODE END OTG_HS_EP1_IN_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USB On The Go HS global interrupt.
+  */
+void OTG_HS_IRQHandler(void)
+{
+  /* USER CODE BEGIN OTG_HS_IRQn 0 */
+
+  /* USER CODE END OTG_HS_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG_HS);
+  /* USER CODE BEGIN OTG_HS_IRQn 1 */
+
+  /* USER CODE END OTG_HS_IRQn 1 */
+}
+
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */
+
+
+int usbd_init(void)
+{
+	extern void MX_USB_DEVICE_Init(void);
+	MX_USB_DEVICE_Init();	// USB设备初始化
+
+return 0;
+}
+
+INIT_BOARD_EXPORT(usbd_init);
+/**
+  * @brief Peripherals Common Clock Configuration
   * @retval None
   */
+void PeriphCommonClock_Config(void)
+{
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FDCAN;
+  PeriphClkInitStruct.PLL2.PLL2M = 5;
+  PeriphClkInitStruct.PLL2.PLL2N = 48;
+  PeriphClkInitStruct.PLL2.PLL2P = 2;
+  PeriphClkInitStruct.PLL2.PLL2Q = 2;
+  PeriphClkInitStruct.PLL2.PLL2R = 2;
+  PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_2;
+  PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
+  PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+  PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL2;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -35,8 +117,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 2;
@@ -69,4 +152,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+	PeriphCommonClock_Config();
 }
+

@@ -10,7 +10,10 @@ menu "On-chip Peripheral Drivers"
         bool "Enable GPIO"
         select RT_USING_PIN
         default y
-
+    config BSP_USING_USB
+        bool "Enable USB HAL Library"
+        select RT_USING_USB
+        default y
     menuconfig BSP_USING_UART
         bool "Enable UART"
         default y
@@ -41,6 +44,7 @@ menu "On-chip Peripheral Drivers"
                 default n
 
         endif
+        
 
     source "$(BSP_DIR)/../libraries/HAL_Drivers/drivers/Kconfig"
 
