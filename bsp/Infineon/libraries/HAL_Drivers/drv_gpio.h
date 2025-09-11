@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2023, RT-Thread Development Team
+ * Copyright (c) 2006-2024 RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -23,7 +23,11 @@
 struct pin_irq_map
 {
     rt_uint16_t port;
+#if defined(SOC_SERIES_IFX_XMC)
+    rt_uint32_t irqno;
+#else
     IRQn_Type irqno;
+#endif
 };
 
 int rt_hw_pin_init(void);

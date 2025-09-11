@@ -7,6 +7,7 @@ import sys
 # toolchains options
 ARCH='risc-v'
 CPU='hpmicro'
+SOC_FAMILY='HPM6700'
 CHIP_NAME='HPM6750'
 
 CROSS_TOOL='gcc'
@@ -66,7 +67,8 @@ if PLATFORM == 'gcc':
     STRIP = PREFIX + 'strip'
 
     ARCH_ABI = ' -mcmodel=medlow '
-    CFLAGS = ARCH_ABI  + ' -DUSE_NONVECTOR_MODE=1 ' + ' -ffunction-sections -fdata-sections -fno-common '
+    DEVICE = ARCH_ABI  + ' -DUSE_NONVECTOR_MODE=1 ' + ' -ffunction-sections -fdata-sections -fno-common '
+    CFLAGS = DEVICE
     AFLAGS = CFLAGS
     LFLAGS  = ARCH_ABI + '  --specs=nano.specs --specs=nosys.specs  -u _printf_float -u _scanf_float -nostartfiles -Wl,--gc-sections '
 
@@ -80,8 +82,8 @@ if PLATFORM == 'gcc':
         LFLAGS += ' -O0'
         LINKER_FILE = 'board/linker_scripts/ram_rtt.ld'
     elif BUILD == 'ram_release':
-        CFLAGS += ' -O2 -Os'
-        LFLAGS += ' -O2 -Os'
+        CFLAGS += ' -O2'
+        LFLAGS += ' -O2'
         LINKER_FILE = 'board/linker_scripts/ram_rtt.ld'
     elif BUILD == 'flash_debug':
         CFLAGS += ' -gdwarf-2'
@@ -91,13 +93,13 @@ if PLATFORM == 'gcc':
         CFLAGS += ' -DFLASH_XIP=1'
         LINKER_FILE = 'board/linker_scripts/flash_rtt.ld'
     elif BUILD == 'flash_release':
-        CFLAGS += ' -O2 -Os'
-        LFLAGS += ' -O2 -Os'
+        CFLAGS += ' -O2'
+        LFLAGS += ' -O2'
         CFLAGS += ' -DFLASH_XIP=1'
         LINKER_FILE = 'board/linker_scripts/flash_rtt.ld'
     else:
-        CFLAGS += ' -O2 -Os'
-        LFLAGS += ' -O2 -Os'
+        CFLAGS += ' -O2'
+        LFLAGS += ' -O2'
         LINKER_FILE = 'board/linker_scripts/flash_rtt.ld'
     LFLAGS += ' -T ' + LINKER_FILE
 
@@ -106,3 +108,10 @@ if PLATFORM == 'gcc':
     # module setting
     CXXFLAGS = CFLAGS +  ' -Woverloaded-virtual -fno-exceptions -fno-rtti '
     CFLAGS = CFLAGS + ' -std=gnu11'
+
+def dist_handle(BSP_ROOT, dist_dir):
+    import sys
+    cwd_path = os.getcwd()
+    sys.path.append(os.path.join(os.path.dirname(BSP_ROOT), 'tools'))
+    from sdk_dist import dist_do_building
+    dist_do_building(BSP_ROOT, dist_dir)

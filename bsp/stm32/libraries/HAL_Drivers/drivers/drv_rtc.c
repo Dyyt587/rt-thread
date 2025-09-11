@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2023, RT-Thread Development Team
+ * Copyright (c) 2006-2024 RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -9,6 +9,7 @@
  * 2020-10-14   Dozingfiretruck Porting for stm32wbxx
  * 2021-02-05   Meco Man      fix the problem of mixing local time and UTC time
  * 2021-07-05   iysheng       implement RTC framework V2.0
+ * 2025-06-05   RCSN          add local time conversion for get timeval and set stamp
  */
 
 #include "board.h"
@@ -22,7 +23,7 @@
 #define RTC_BKP_DR1 RT_NULL
 #endif
 
-//#define DRV_DEBUG
+/* #define DRV_DEBUG*/
 #define LOG_TAG             "drv.rtc"
 #include <drv_log.h>
 
@@ -71,8 +72,11 @@ static rt_err_t stm32_rtc_get_timeval(struct timeval *tv)
     tm_new.tm_mon  = RTC_DateStruct.Month - 1;
     tm_new.tm_year = RTC_DateStruct.Year + 100;
 
+#ifdef RT_ALARM_USING_LOCAL_TIME
+    tv->tv_sec = mktime(&tm_new);
+#else
     tv->tv_sec = timegm(&tm_new);
-
+#endif
 #if defined(SOC_SERIES_STM32H7)
     tv->tv_usec = (255.0 - RTC_TimeStruct.SubSeconds * 1.0) / 256.0 * 1000.0 * 1000.0;
 #endif
@@ -85,8 +89,11 @@ static rt_err_t set_rtc_time_stamp(time_t time_stamp)
     RTC_TimeTypeDef RTC_TimeStruct = {0};
     RTC_DateTypeDef RTC_DateStruct = {0};
     struct tm tm = {0};
-
+#ifdef RT_ALARM_USING_LOCAL_TIME
+    localtime_r(&time_stamp,&tm);
+#else
     gmtime_r(&time_stamp, &tm);
+#endif
     if (tm.tm_year < 100)
     {
         return -RT_ERROR;
@@ -318,6 +325,11 @@ static rt_err_t stm32_rtc_set_alarm(struct rt_rtc_wkalarm *alarm)
         rtc_device.wkalarm.tm_hour = alarm->tm_hour;
         rtc_device.wkalarm.tm_min = alarm->tm_min;
         rtc_device.wkalarm.tm_sec = alarm->tm_sec;
+        /* must include the year, month, and day */
+        /* as the alarm in RT_ALARM_ONESHOT mode compares the current timestamp with the alarm timestamp */
+        rtc_device.wkalarm.tm_year = alarm->tm_year;
+        rtc_device.wkalarm.tm_mon = alarm->tm_mon;
+        rtc_device.wkalarm.tm_mday = alarm->tm_mday;
         rtc_alarm_time_set(&rtc_device);
     }
     else
@@ -393,7 +405,7 @@ static rt_err_t rtc_alarm_time_set(struct rtc_device_object* p_dev)
 
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
 {
-    //LOG_D("rtc alarm isr.\n");
+    /*LOG_D("rtc alarm isr.\n");*/
     rt_alarm_update(&rtc_device.rtc_dev.parent, 1);
 }
 
@@ -424,5 +436,5 @@ static int rt_hw_rtc_init(void)
 
     return RT_EOK;
 }
-INIT_DEVICE_EXPORT(rt_hw_rtc_init);
+INIT_BOARD_EXPORT(rt_hw_rtc_init);
 #endif /* BSP_USING_ONCHIP_RTC */

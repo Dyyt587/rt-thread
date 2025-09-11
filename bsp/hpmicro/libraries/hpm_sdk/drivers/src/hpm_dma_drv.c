@@ -12,8 +12,9 @@ hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint8_t ch_num, dma_channel_config_t
     uint32_t tmp;
 
     if ((ch->dst_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
-            || (ch->src_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
-            || (ch_num >= DMA_SOC_CHANNEL_NUM)) {
+       || (ch->src_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
+       || (ch_num >= DMA_SOC_CHANNEL_NUM)
+       || ((ch->dst_mode == DMA_HANDSHAKE_MODE_HANDSHAKE) && (ch->src_mode == DMA_HANDSHAKE_MODE_HANDSHAKE))) {
         return status_invalid_argument;
     }
     if ((ch->size_in_byte & ((1 << ch->dst_width) - 1))
@@ -60,7 +61,8 @@ hpm_stat_t dma_setup_channel(DMA_Type *ptr, uint8_t ch_num, dma_channel_config_t
 
 void dma_default_channel_config(DMA_Type *ptr, dma_channel_config_t *ch)
 {
-    ch->priority = 0;
+    (void) ptr;
+    ch->priority = DMA_CHANNEL_PRIORITY_LOW;
     ch->src_mode = DMA_HANDSHAKE_MODE_NORMAL;
     ch->dst_mode = DMA_HANDSHAKE_MODE_NORMAL;
     ch->src_burst_size = DMA_NUM_TRANSFER_PER_BURST_1T;
@@ -78,10 +80,12 @@ hpm_stat_t dma_config_linked_descriptor(DMA_Type *ptr, dma_linked_descriptor_t *
     uint32_t tmp;
 
     if ((config->dst_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
-            || (config->src_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
-            || (ch_num >= DMA_SOC_CHANNEL_NUM)) {
+     || (config->src_width > DMA_SOC_TRANSFER_WIDTH_MAX(ptr))
+     || (ch_num >= DMA_SOC_CHANNEL_NUM)
+     || ((config->dst_mode == DMA_HANDSHAKE_MODE_HANDSHAKE) && (config->src_mode == DMA_HANDSHAKE_MODE_HANDSHAKE))) {
         return status_invalid_argument;
     }
+
     if ((config->size_in_byte & ((1 << config->dst_width) - 1))
      || (config->src_addr & ((1 << config->src_width) - 1))
      || (config->dst_addr & ((1 << config->dst_width) - 1))
@@ -89,6 +93,7 @@ hpm_stat_t dma_config_linked_descriptor(DMA_Type *ptr, dma_linked_descriptor_t *
      || ((config->linked_ptr & 0x7))) {
         return status_dma_alignment_error;
     }
+
     descriptor->src_addr = DMA_CHCTRL_SRCADDR_SRCADDRL_SET(config->src_addr);
     descriptor->dst_addr = DMA_CHCTRL_DSTADDR_DSTADDRL_SET(config->dst_addr);
     descriptor->trans_size = DMA_CHCTRL_TRANSIZE_TRANSIZE_SET(config->size_in_byte >> config->src_width);
@@ -132,7 +137,7 @@ hpm_stat_t dma_start_memcpy(DMA_Type *ptr, uint8_t ch_num,
     /* burst size checking (1-byte burst length will cause heavy overhead */
     if (!burst_len_in_byte || burst_len_in_byte == 1 || burst_len_in_byte > size
         || burst_len_in_byte >
-            ((1 << DMA_SOC_TRANSFER_WIDTH_MAX(ptr)) << DMA_SOC_TRANSFER_PER_BURST_MAX(ptr))) {
+            (uint32_t) ((1 << DMA_SOC_TRANSFER_WIDTH_MAX(ptr)) << DMA_SOC_TRANSFER_PER_BURST_MAX(ptr))) {
         return status_invalid_argument;
     }
 
@@ -183,6 +188,7 @@ hpm_stat_t dma_start_memcpy(DMA_Type *ptr, uint8_t ch_num,
 
 void dma_default_handshake_config(DMA_Type *ptr, dma_handshake_config_t *config)
 {
+    (void) ptr;
     memset(config, 0, sizeof(dma_handshake_config_t));
 }
 

@@ -685,7 +685,7 @@ static rt_uint32_t _sdio_clock_get(CM_SDIOC_TypeDef *SDIOCx)
     rt_uint32_t clk;
 
     (void)SDIOCx;
-#if defined (HC32F4A0)
+#if defined (HC32F4A0) || defined (HC32F4A8)
     clk = CLK_GetBusClockFreq(CLK_BUS_PCLK1);
 #elif defined (HC32F460)
     clk = CLK_GetBusClockFreq(CLK_BUS_EXCLK);
@@ -987,7 +987,6 @@ static struct rt_mmcsd_host *_sdio_host_create(struct hc32_sdio_config *config,
     host->ops = &_mmcsd_host_ops;
     host->freq_min = 400 * 1000;
     host->freq_max = SDIO_MAX_FREQ;
-    host->valid_ocr = VDD_26_27 | VDD_27_28 | VDD_28_29 | VDD_29_30 | VDD_30_31 | VDD_31_32 | VDD_32_33 | VDD_33_34;/* The voltage range supported is 2.6v-3.4v */
     host->valid_ocr = VDD_32_33 | VDD_33_34;
 #ifndef SDIO_USING_1_BIT
     host->flags = MMCSD_BUSWIDTH_4 | MMCSD_MUTBLKWRITE | MMCSD_SUP_SDIO_IRQ;

@@ -5,10 +5,11 @@ config BSP_USING_BL61X
     select ARCH_RISCV32
     select ARCH_RISCV_FPU_S
     select BSP_USING_ROMAPI
+    select RT_USING_CACHE
     default y
 
 config BSP_USING_ROMAPI
-    bool 
+    bool
     default y
 
 config BSP_USING_PSRAM
@@ -26,3 +27,23 @@ choice
         bool "M0P Module"
         select BSP_USING_PSRAM
 endchoice
+
+menuconfig BSP_USING_USB
+    bool "Enable USB"
+    default n
+    if BSP_USING_USB
+        config BSP_USING_USB_DEVICE
+            bool "Enable USB Device"
+            default n
+            select RT_USING_CHERRYUSB
+            select RT_CHERRYUSB_DEVICE
+            select RT_CHERRYUSB_DEVICE_SPEED_HS
+            select RT_CHERRYUSB_DEVICE_BL
+        config BSP_USING_USB_HOST
+            bool "Enable USB Host"
+            default n
+            select RT_USING_CACHE
+            select RT_USING_CHERRYUSB
+            select RT_CHERRYUSB_HOST
+            select RT_CHERRYUSB_HOST_EHCI_BL
+    endif

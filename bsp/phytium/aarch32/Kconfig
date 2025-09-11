@@ -1,28 +1,14 @@
 mainmenu "RT-Thread Project Configuration"
 
-config RTT_DIR
-    string
-    option env="RTT_ROOT"
-    default "../../.."
+RTT_DIR := ../../..
 
-config BSP_DIR
-    string
-    option env="BSP_ROOT"
-    default "../."
+SDK_DIR := .././libraries/phytium_standalone_sdk
 
-config SDK_DIR
-    string
-    option env="SDK_DIR"
-    default ".././libraries/phytium_standalone_sdk"
+PKGS_DIR := packages
 
-config PKGS_DIR
-    string
-    option env="PKGS_ROOT"
-    default "packages"
-
-source "$RTT_DIR/Kconfig"
-source "$PKGS_DIR/Kconfig"
-source "$BSP_DIR/libraries/drivers/Kconfig"
+source "$(RTT_DIR)/Kconfig"
+osource "$PKGS_DIR/Kconfig"
+source "$(BSP_DIR)/../libraries/drivers/Kconfig"
 
 config PHYTIUM_ARCH_AARCH32
     bool
@@ -47,9 +33,9 @@ menu "Standalone Setting"
         help
             Use the Aarch64 to Aarch32 mode function
 
-    source "$SDK_DIR/soc/soc.kconfig"
-    source "$BSP_DIR/board/board.kconfig"
-    source "$SDK_DIR/common/common.kconfig"
+    source "$(SDK_DIR)/soc/soc.kconfig"
+    source "$(BSP_DIR)/../board/board.kconfig"
+    source "$(SDK_DIR)/common/common.kconfig"
 endmenu
 
 

@@ -22,7 +22,7 @@
 
 #include <rtdef.h>
 
-#if defined (RT_USING_CACHE) || defined(RT_USING_SMP)
+#if defined (RT_USING_CACHE) || defined(RT_USING_SMP) || defined(RT_HW_INCLUDE_CPUPORT)
 #include <cpuport.h> /* include spinlock, cache ops, etc. */
 #endif
 
@@ -132,6 +132,9 @@ rt_isr_handler_t rt_hw_interrupt_install(int              vector,
                                          rt_isr_handler_t handler,
                                          void            *param,
                                          const char      *name);
+void rt_hw_interrupt_uninstall(int              vector,
+                               rt_isr_handler_t handler,
+                               void            *param);
 
 #ifdef RT_USING_SMP
 rt_base_t rt_hw_local_irq_disable(void);
@@ -169,8 +172,8 @@ void rt_hw_context_switch_interrupt(rt_ubase_t from, rt_ubase_t to, rt_thread_t 
  * Hardware Layer Backtrace Service
  */
 struct rt_hw_backtrace_frame {
-    rt_base_t fp;
-    rt_base_t pc;
+    rt_uintptr_t fp;
+    rt_uintptr_t pc;
 };
 
 rt_err_t rt_hw_backtrace_frame_get(rt_thread_t thread, struct rt_hw_backtrace_frame *frame);
@@ -224,7 +227,8 @@ void rt_hw_secondary_cpu_up(void);
  * secondary cpu idle function
  */
 void rt_hw_secondary_cpu_idle_exec(void);
-#else
+
+#else /* !RT_USING_SMP */
 
 #define RT_DEFINE_HW_SPINLOCK(x)    rt_ubase_t x
 
@@ -232,13 +236,13 @@ void rt_hw_secondary_cpu_idle_exec(void);
 #define rt_hw_spin_unlock(lock)   rt_hw_interrupt_enable(*(lock))
 
 
-#endif
+#endif /* RT_USING_SMP */
 
 #ifndef RT_USING_CACHE
-#define rt_hw_isb()
-#define rt_hw_dmb()
-#define rt_hw_dsb()
-#endif
+    #define rt_hw_isb()
+    #define rt_hw_dmb()
+    #define rt_hw_dsb()
+#endif /* RT_USING_CACHE */
 
 #ifdef __cplusplus
 }

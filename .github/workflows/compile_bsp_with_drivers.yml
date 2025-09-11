@@ -13,31 +13,18 @@ name: BSP compilation with more drivers
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - documentation/**
-      - '**/README.md'
-      - '**/README_zh.md'
-  pull_request:
-    branches:
-      - master
-    paths-ignore:
-      - documentation/**
-      - '**/README.md'
-      - '**/README_zh.md'
+  workflow_dispatch: #disable
 
 permissions:
   contents: read # to fetch code (actions/checkout)
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: BSP Compilation with More Drivers
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@main
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
@@ -46,13 +33,12 @@ jobs:
       - name: Install Tools
         shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get -qq install gcc-multilib libncurses5 libncurses5-dev libncursesw5-dev scons
-          sudo python -m pip install --upgrade pip -qq
+          wget https://raw.githubusercontent.com/RT-Thread/env/master/install_ubuntu.sh
+          chmod 777 install_ubuntu.sh
+          ./install_ubuntu.sh
           git config --global http.postBuffer 524288000
           git remote -v
           git fetch origin
-          python -c "import tools.menuconfig; tools.menuconfig.touch_env()"
 
       - name: Install Arm ToolChains
         if: ${{ success() }}
@@ -67,5 +53,5 @@ jobs:
         if: ${{ success() }}
         shell: bash
         run: |
-          source ~/.env/env.sh
-          #python tools/ci/compile_bsp_with_drivers.py
+          # source ~/.env/env.sh
+          # python tools/ci/compile_bsp_with_drivers.py

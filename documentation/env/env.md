@@ -1,12 +1,10 @@
-# User Manual of Env
+@page page_env Env
 
 Env is a handy utility tool developed by RT-Thread team to build environment, graphical system configuration, and packages management for software projects that intend to run on RT-Thread operating system. Env tool come with source code builder, compilation environment and package management system.
 
 It is a wrapper tool for build-in menuconfig, which is an open source GUI tool which is designed to tailor for ease of use for developers. It can also be used to configure the kernel configuration parameters, components and software packages so that developers can construct the system like lego blocks.
 
-Env for Windows repository: https://github.com/RT-Thread/env-windows
-
-## Main Features
+# Main Features
 
 - menuconfig provides graphical interface to interact with operational logic and configuration parameters
 - Each configuration option come with help session by default.
@@ -16,10 +14,13 @@ Env for Windows repository: https://github.com/RT-Thread/env-windows
 - Modular software packages and decoupling design make it easier to maintain.
 - It also featured with point and click to download additional software packages and dependencies directly from Internet.
 
-## Download
+# User Guide
 
-- [Download the Env tool](https://github.com/RT-Thread/env-windows/releases), e.g. `env-windows-v1.3.5.7z`.
-- Extract the .7z file and the path shouldn't contain any non-ascii or space characters.
+Lastest user guide see <https://github.com/RT-Thread/env/blob/master/README.md>.
+
+# Archive Information
+
+<span style='color:red'>**NOTE: The following information may be outdated, please read carefully.**</span>
 
 ## User Guide of Env
 
@@ -65,7 +66,7 @@ For example, the target BSP is `rt-thread\bsp\stm32\stm32f103-dofly-lyc8`:
 
 Env for Windows carries Python2.7 & Scons . To compile BSP, just use the default ARM_GCC toolchain by running `scons` or `scons -j12` (12 CPU cores compiling) command in the target BSP directory.
 
-Env for Windows carries ARM GCC toolchain by default. When users compile ARM BSPs, users can directly type `scons` or `scons -j12` command to compile the BSP. However, if the BSP is other architecture, e.g. RISC-V, users need to use `scons --exec-path='C:\xxx\sdk-toolchain-RISC-V-GCC-WCH-1.0.0\bin' -j12` command to specify the toolchain when compiling.
+Env for Windows carries ARM GCC toolchain by default. When users compile ARM BSPs, users can directly type `scons` or `scons -j12` command to compile the BSP. However, if the BSP is other architecture, e.g. RISC-V, users need to use `scons --exec-path='C:\\xxx\\sdk-toolchain-RISC-V-GCC-WCH-1.0.0\\bin' -j12` command to specify the toolchain when compiling.
 
 ![compilation project using scons command](figures/use_scons.png)
 
@@ -82,7 +83,7 @@ scons --target=mdk4
 scons --target=mdk5
 ```
 
-For more scons tutorials, please refer to  [*Scons*](../scons/scons.md).
+For more scons tutorials, please refer to  @ref page_scons.
 
 ### BSP configuration: menuconfig
 
@@ -235,7 +236,7 @@ Old project here refers to the development that has been going on for a while, a
 1. Currently, you can use the scons tool to generate mdk/iar projects under Env. There is no automatic generation of eclipse projects.
 2. Generally, using gcc's toolchain, using an editor such as source insight or VS Code to edit the code and compile with `scons` command.
 
-### Q:How can my own BSP support menuconfig?
+### Q: How can my own BSP support menuconfig?
 
 **A:** You can refer to this chapter **Use Env in Your Project**.
 

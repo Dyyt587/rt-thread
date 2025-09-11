@@ -15,7 +15,9 @@
 #include <rtthread.h>
 
 #include <board.h>
-
+#ifdef BSP_USING_DRIVERS_EXAMPLE
+#include "auto_test.h"
+#endif
 #define ASSERT_STATIC(expression) \
     extern int assert_static[(expression) ? 1 : -1]
 
@@ -26,9 +28,9 @@
 #ifndef RT_USING_SMP
     ASSERT_STATIC(RT_CPUS_NR == 1U); /* please set RT_CPUS_NR = 1 when SMP off */
 #else
-    #if defined(TARGET_E2000D)
+    #if defined(TARGET_PE2202)
         ASSERT_STATIC(RT_CPUS_NR <= 2U); /* use 2 cores at most */
-    #elif defined(TARGET_E2000Q) || defined(TARGET_PHYTIUMPI)
+    #elif defined(TARGET_PE2204)
         ASSERT_STATIC(RT_CPUS_NR <= 4U); /* use 4 cores at most */
     #endif
 #endif
@@ -58,7 +60,7 @@ static void demo_core_thread(void *parameter)
         level = rt_cpus_lock();
         rt_kprintf("Hi, core%d \r\n", rt_hw_cpu_id());
         rt_cpus_unlock(level);
-        rt_thread_mdelay(200000);
+        rt_thread_mdelay(20000);
     }
 }
 
@@ -80,15 +82,17 @@ void demo_core(void)
 
         rt_thread_control(&test_core[i], RT_THREAD_CTRL_BIND_CPU, (void *)cpu_id);
         rt_thread_startup(&test_core[i]);
+        rt_thread_mdelay(500);
     }
 }
 #endif
 
 int main(void)
 {
-#ifdef RT_USING_SMP
+#ifdef BSP_USING_DRIVERS_EXAMPLE
+    auto_test();
+#elif defined RT_USING_SMP
     demo_core();
 #endif
     return RT_EOK;
 }
-

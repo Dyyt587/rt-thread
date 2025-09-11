@@ -34,7 +34,9 @@ static rt_err_t drv_pwm_config(struct phytium_pwm *pwm_dev)
     FPwmConfig config;
     FPwmCtrl *pwm_handle = &pwm_dev->pwm_handle;
     FIOPadSetPwmMux(pwm_handle->config.instance_id, 0);
+#if !defined(PD2408_TEST_A_BOARD) || defined(PD2408_TEST_B_BOARD)
     FIOPadSetPwmMux(pwm_handle->config.instance_id, 1);
+#endif
     config = *FPwmLookupConfig(pwm_handle->config.instance_id);
 #ifdef RT_USING_SMART
     config.lsd_config_addr = (uintptr)rt_ioremap((void *)config.lsd_config_addr, 0x100);
@@ -78,7 +80,7 @@ static rt_err_t drv_pwm_set(struct phytium_pwm *pwm_dev, int cmd, struct rt_pwm_
     FPwmVariableConfig pwm_cfg;
     u32 channel = configuration->channel;
 
-    memset(&pwm_cfg, 0, sizeof(pwm_cfg));
+    rt_memset(&pwm_cfg, 0, sizeof(pwm_cfg));
     pwm_cfg.tim_ctrl_mode = FPWM_MODULO;
     pwm_cfg.tim_ctrl_div = 50 - 1;
     /* Precision set to microseconds */
@@ -119,18 +121,11 @@ static rt_err_t drv_pwm_get(struct phytium_pwm *pwm_dev, struct rt_pwm_configura
 {
     RT_ASSERT(pwm_dev);
     RT_ASSERT(configuration);
-    u32 ret;
     FPwmVariableConfig pwm_cfg;
     u32 channel = configuration->channel;
 
-    memset(&pwm_cfg, 0, sizeof(pwm_cfg));
-    ret = FPwmVariableGet(&pwm_dev->pwm_handle, channel, &pwm_cfg);
-    if (ret != FPWM_SUCCESS)
-    {
-        LOG_E("Pwm variable get failed.\n");
-
-        return -RT_ERROR;
-    }
+    rt_memset(&pwm_cfg, 0, sizeof(pwm_cfg));
+    FPwmVariableGet(&pwm_dev->pwm_handle, channel, &pwm_cfg);
 
     configuration->period = pwm_cfg.pwm_period * 1000;
     configuration->pulse = pwm_cfg.pwm_pulse * 1000;
@@ -148,7 +143,7 @@ static rt_err_t drv_pwm_set_dead_time(struct phytium_pwm *pwm_dev, struct rt_pwm
     FPwmDbVariableConfig db_cfg;
     u32 channel = configuration->channel;
 
-    memset(&db_cfg, 0, sizeof(db_cfg));
+    rt_memset(&db_cfg, 0, sizeof(db_cfg));
     db_cfg.db_rise_cycle = configuration->dead_time / 1000;
     db_cfg.db_fall_cycle = configuration->dead_time / 1000;
     db_cfg.db_polarity_sel = FPWM_DB_AH;

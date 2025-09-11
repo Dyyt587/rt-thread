@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2023, RT-Thread Development Team
+ * Copyright (c) 2006-2024 RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -21,12 +21,10 @@
 struct ifx_uart_config
 {
     cyhal_uart_t *uart_obj;
-
     const char *name;
     rt_uint32_t tx_pin;
     rt_uint32_t rx_pin;
     CySCB_Type *usart_x;
-    IRQn_Type intrSrc;
     cy_israddress userIsr;
     cy_stc_sysint_t *UART_SCB_IRQ_cfg;
 };

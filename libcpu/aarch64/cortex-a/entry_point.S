@@ -7,6 +7,7 @@
  * 2020-01-15     bigmagic     the first version
  * 2020-08-10     SummerGift   support clang compiler
  * 2023-04-29     GuEe-GUI     support kernel's ARM64 boot header
+ * 2024-01-18     Shell        fix implicit dependency of cpuid management
  */
 
 #ifndef __ASSEMBLY__
@@ -56,7 +57,7 @@
 /*
  * Our goal is to boot the rt-thread as possible without modifying the
  * bootloader's config, so we use the kernel's boot header for ARM64:
- *   https://www.kernel.org/doc/html/latest/arm64/booting.html#call-the-kernel-image
+ *   https://www.kernel.org/doc/html/latest/arch/arm64/booting.html#call-the-kernel-image
  */
 _head:
     b       _start          /* Executable code */
@@ -69,7 +70,8 @@ _head:
     .quad   0               /* Reserved */
     .ascii  "ARM\x64"       /* Magic number */
     .long   0               /* Reserved (used for PE COFF offset) */
-#endif
+#endif /* RT_USING_OFW */
+
 /* Variable registers: x21~x28 */
 dtb_paddr .req x21
 boot_arg0 .req x22
@@ -94,6 +96,10 @@ _start:
     /* Save cpu stack */
     get_phy stack_top, .boot_cpu_stack_top
     /* Save cpu id temp */
+#ifdef ARCH_USING_HW_THREAD_SELF
+    msr     tpidrro_el0, xzr
+    /* Save thread self */
+#endif /* ARCH_USING_HW_THREAD_SELF */
     msr     tpidr_el1, xzr
 
     bl      init_cpu_el
@@ -109,6 +115,7 @@ _start:
     /* Now we are in the end of boot cpu process */
     ldr     x8, =rtthread_startup
     b       init_mmu_early
+    /* never come back */
 
 kernel_start:
     /* jump to the PE's system entry */
@@ -147,11 +154,10 @@ _secondary_cpu_entry:
 
     /* Get cpu id success */
     sub     x0, x2, #1
-    msr     tpidr_el1, x0           /* Save cpu id global */
-#else
-    bl      rt_hw_cpu_id_set
-    mrs     x0, tpidr_el1
 #endif /* RT_USING_OFW */
+    /* Save cpu id global */
+    bl      rt_hw_cpu_id_set
+    bl      rt_hw_cpu_id
 
     /* Set current cpu's stack top */
     sub     x0, x0, #1
@@ -172,9 +178,11 @@ init_cpu_el:
     lsr     x0, x0, #2
     and     x0, x0, #3
 
+    /* running at EL3? */
     cmp     x0, #3
-    bne     .init_cpu_hyp
+    bne     .init_cpu_hyp_test
 
+    /* should never be executed, just for completeness. (EL3) */
     mov     x1, #(1 << 0)           /* EL0 and EL1 are in Non-Secure state */
     orr     x1, x1, #(1 << 4)       /* RES1 */
     orr     x1, x1, #(1 << 5)       /* RES1 */
@@ -192,10 +200,12 @@ init_cpu_el:
     msr     elr_el3, x1
     eret
 
-.init_cpu_hyp:
-    cmp     x0, #2                  /* EL1 = 0100  */
+.init_cpu_hyp_test:
+    /* running at EL2? */
+    cmp     x0, #2                  /* EL2 = 0b10  */
     bne     .init_cpu_sys
 
+.init_cpu_hyp:
     /* Enable CNTP for EL1 */
     mrs     x0, cnthctl_el2         /* Counter-timer Hypervisor Control register */
     orr     x0, x0, #(1 << 0)       /* Don't traps NS EL0/1 accesses to the physical counter */
@@ -220,10 +230,13 @@ init_cpu_el:
 
 .init_cpu_sys:
     mrs     x0, sctlr_el1
-    orr     x0, x0, #(1 << 12)      /* Enable Instruction */
     bic     x0, x0, #(3 << 3)       /* Disable SP Alignment check */
     bic     x0, x0, #(1 << 1)       /* Disable Alignment check */
     msr     sctlr_el1, x0
+
+    mrs     x0, cntkctl_el1
+    orr     x0, x0, #(1 << 1)      /* Set EL0VCTEN, enabling the EL0 Virtual Count Timer */
+    msr     cntkctl_el1, x0
 
     /* Avoid trap from SIMD or float point instruction */
     mov     x0, #0x00300000         /* Don't trap any SIMD/FP instructions in both EL0 and EL1 */
@@ -273,7 +286,7 @@ init_mmu_early:
     get_phy x1, .early_tbl1_page
 
     get_pvoff x2 x3
-    ldr     x2, =0x40000000         /* Map 1G memory for kernel space */
+    ldr     x2, =ARCH_EARLY_MAP_SIZE    /* Map 1G memory for kernel space */
     bl      rt_hw_mem_setup_early
 
     b       enable_mmu_early
@@ -299,7 +312,9 @@ enable_mmu_early:
 
     ldr     x30, =kernel_start      /* Set LR to kernel_start function, it's virtual addresses */
 
+    /* Enable page table translation */
     mrs     x1, sctlr_el1
+    orr     x1, x1, #(1 << 12)      /* Stage 1 instruction access Cacheability control */
     orr     x1, x1, #(1 << 2)       /* Cacheable Normal memory in stage1 */
     orr     x1, x1, #(1 << 0)       /* MMU Enable */
     msr     sctlr_el1, x1

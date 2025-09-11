@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2021, RT-Thread Development Team
+ * Copyright (c) 2006-2025, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -31,6 +31,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #endif /* DFS_USING_POSIX */
+
+#ifdef RT_USING_POSIX_STDIO
+#include <unistd.h>
+#include <posix/stdio.h>
+#endif /* RT_USING_POSIX_STDIO */
 
 /* finsh thread */
 #ifndef RT_USING_HEAP
@@ -122,7 +127,7 @@ const char *finsh_get_prompt(void)
 }
 
 /**
- * @ingroup finsh
+ * @ingroup group_finsh
  *
  * This function get the prompt mode of finsh shell.
  *
@@ -135,7 +140,7 @@ rt_uint32_t finsh_get_prompt_mode(void)
 }
 
 /**
- * @ingroup finsh
+ * @ingroup group_finsh
  *
  * This function set the prompt mode of finsh shell.
  *
@@ -154,7 +159,7 @@ int finsh_getchar(void)
 #ifdef RT_USING_DEVICE
     char ch = 0;
 #ifdef RT_USING_POSIX_STDIO
-    if(read(STDIN_FILENO, &ch, 1) > 0)
+    if(read(rt_posix_stdio_get_console(), &ch, 1) > 0)
     {
         return ch;
     }
@@ -188,7 +193,7 @@ int finsh_getchar(void)
     return ch;
 #endif /* RT_USING_POSIX_STDIO */
 #else
-    extern char rt_hw_console_getchar(void);
+    extern signed char rt_hw_console_getchar(void);
     return rt_hw_console_getchar();
 #endif /* RT_USING_DEVICE */
 }
@@ -205,7 +210,7 @@ static rt_err_t finsh_rx_ind(rt_device_t dev, rt_size_t size)
 }
 
 /**
- * @ingroup finsh
+ * @ingroup group_finsh
  *
  * This function sets the input device of finsh shell.
  *
@@ -246,7 +251,7 @@ void finsh_set_device(const char *device_name)
 }
 
 /**
- * @ingroup finsh
+ * @ingroup group_finsh
  *
  * This function returns current finsh shell input device.
  *
@@ -260,7 +265,7 @@ const char *finsh_get_device()
 #endif /* !defined(RT_USING_POSIX_STDIO) && defined(RT_USING_DEVICE) */
 
 /**
- * @ingroup finsh
+ * @ingroup group_finsh
  *
  * This function set the echo mode of finsh shell.
  *
@@ -275,7 +280,7 @@ void finsh_set_echo(rt_uint32_t echo)
 }
 
 /**
- * @ingroup finsh
+ * @ingroup group_finsh
  *
  * This function gets the echo mode of finsh shell.
  *
@@ -452,11 +457,42 @@ static void shell_push_history(struct finsh_shell *shell)
 }
 #endif
 
+#if defined(FINSH_USING_WORD_OPERATION)
+static int find_prev_word_start(const char *line, int curpos)
+{
+    if (curpos <= 0) return 0;
+
+    /* Skip whitespace */
+    while (--curpos > 0 && (line[curpos] == ' ' || line[curpos] == '\t'));
+
+    /* Find word start */
+    while (curpos > 0 && !(line[curpos] == ' ' || line[curpos] == '\t'))
+        curpos--;
+
+    return (curpos <= 0) ? 0 : curpos + 1;
+}
+
+static int find_next_word_end(const char *line, int curpos, int max)
+{
+    if (curpos >= max) return max;
+
+    /* Skip to next word */
+    while (curpos < max && (line[curpos] == ' ' || line[curpos] == '\t'))
+        curpos++;
+
+    /* Find word end */
+    while (curpos < max && !(line[curpos] == ' ' || line[curpos] == '\t'))
+        curpos++;
+
+    return curpos;
+}
+#endif /* defined(FINSH_USING_WORD_OPERATION) */
+
 #ifdef RT_USING_HOOK
 static void (*_finsh_thread_entry_hook)(void);
 
 /**
- * @ingroup finsh
+ * @ingroup group_finsh
  *
  * @brief This function set a hook function at the entry of finsh thread
  *
@@ -530,7 +566,7 @@ static void finsh_thread_entry(void *parameter)
         }
         else if (shell->stat == WAIT_SPEC_KEY)
         {
-            if (ch == 0x5b)
+            if (ch == 0x5b || ch == 0x41 || ch == 0x42 || ch == 0x43 || ch == 0x44)
             {
                 shell->stat = WAIT_FUNC_KEY;
                 continue;
@@ -604,6 +640,42 @@ static void finsh_thread_entry(void *parameter)
 
                 continue;
             }
+#if defined(FINSH_USING_WORD_OPERATION)
+            /* Add Ctrl+Left/Right handling */
+            else if (ch == '1')
+            {
+                /* Read modifier sequence [1;5D/C] */
+                int next_ch = finsh_getchar();
+                if (next_ch == ';')
+                {
+                    next_ch = finsh_getchar();
+                    if (next_ch == '5')
+                    {
+                        next_ch = finsh_getchar();
+                        if (next_ch == 'D') /* Ctrl+Left */
+                        {
+                            int new_pos = find_prev_word_start(shell->line, shell->line_curpos);
+                            if (new_pos != shell->line_curpos)
+                            {
+                                rt_kprintf("\033[%dD", shell->line_curpos - new_pos);
+                                shell->line_curpos = new_pos;
+                            }
+                            continue;
+                        }
+                        else if (next_ch == 'C') /* Ctrl+Right */
+                        {
+                            int new_pos = find_next_word_end(shell->line, shell->line_curpos, shell->line_position);
+                            if (new_pos != shell->line_curpos)
+                            {
+                                rt_kprintf("\033[%dC", new_pos - shell->line_curpos);
+                                shell->line_curpos = new_pos;
+                            }
+                            continue;
+                        }
+                    }
+                }
+            }
+#endif /*defined(FINSH_USING_WORD_OPERATION) */
         }
 
         /* received null or error */
@@ -656,7 +728,43 @@ static void finsh_thread_entry(void *parameter)
 
             continue;
         }
+#if defined(FINSH_USING_WORD_OPERATION)
+        /* Add Ctrl+Backspace handling */
+        else if (ch == 0x17) /* Ctrl+Backspace (typically ^W) */
+        {
+            if (shell->line_curpos == 0) continue;
 
+            int start = find_prev_word_start(shell->line, shell->line_curpos);
+            int del_count = shell->line_curpos - start;
+            int new_len = shell->line_position - del_count;
+
+            /* Delete characters and properly add RT_NULL termination */
+            rt_memmove(&shell->line[start],
+                       &shell->line[start + del_count],
+                       new_len - start + 1);
+
+            /* Clear residual data */
+            rt_memset(&shell->line[new_len], 0, shell->line_position - new_len);
+
+            /* Update positions */
+            shell->line_position = new_len;
+            shell->line_curpos = start;
+
+            /* Redraw the affected line section */
+            rt_kprintf("\033[%dD", del_count);
+            /* Rewrite the remaining content */
+            rt_kprintf("%.*s", shell->line_position - start, &shell->line[start]);
+            /* Clear trailing artifacts */
+            rt_kprintf("\033[K");
+            if (shell->line_position > start)
+            {
+                /* Reset cursor */
+                rt_kprintf("\033[%dD", shell->line_position - start);
+            }
+
+            continue;
+        }
+#endif /*defined(FINSH_USING_WORD_OPERATION) */
         /* handle end of line, break */
         if (ch == '\r' || ch == '\n')
         {
@@ -750,7 +858,7 @@ __declspec(allocate("FSymTab$z")) const struct finsh_syscall __fsym_end =
 #endif
 
 /*
- * @ingroup finsh
+ * @ingroup group_finsh
  *
  * This function will initialize finsh shell
  */

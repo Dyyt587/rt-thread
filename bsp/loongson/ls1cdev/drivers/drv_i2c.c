@@ -9,8 +9,8 @@
  */
 
 #include <rtthread.h>
-#include <drivers/i2c.h>
-#include <drivers/i2c-bit-ops.h>
+#include <drivers/dev_i2c.h>
+#include <drivers/dev_i2c_bit_ops.h>
 #include "drv_i2c.h"
 #include "../libraries/ls1c_gpio.h"
 #include "../libraries/ls1c_delay.h"
@@ -81,17 +81,18 @@ static rt_int32_t ls1c_get_scl(void *data)
 }
 
 
-static const struct rt_i2c_bit_ops bit_ops = {
+static const struct rt_i2c_bit_ops bit_ops = 
+{
     .data       = RT_NULL,
+    .pin_init   = ls1c_i2c_gpio_init,
     .set_sda    = ls1c_set_sda,
     .set_scl    = ls1c_set_scl,
     .get_sda    = ls1c_get_sda,
     .get_scl    = ls1c_get_scl,
-
     .udelay     = ls1c_udelay,
-
     .delay_us   = 20,       // 此值为周期(us)
     .timeout    = 10,       // 单位为tick
+    .i2c_pin_init_flag = RT_FALSE
 };
 
 
@@ -101,8 +102,6 @@ int ls1c_i2c_init(void)
     static struct rt_i2c_bus_device bus = {0};
 
     bus.priv = (void *)&bit_ops;
-
-    ls1c_i2c_gpio_init();
 
     rt_i2c_bit_add_bus(&bus, "i2c3");
 

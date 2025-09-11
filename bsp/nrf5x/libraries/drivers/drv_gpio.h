@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2022, RT-Thread Development Team
+ * Copyright (c) 2006-2025, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -34,11 +34,11 @@
 struct pin_index
 {
     int index;
-    NRF_GPIO_Type *gpio;//NRF_P0 or NRF_P1
+    NRF_GPIO_Type *gpio;/* NRF_P0 or NRF_P1 */
     rt_base_t pin;
 };
 
-rt_err_t rt_hw_pin_init(void);
+int rt_hw_pin_init(void);
 
 #endif /* __DRV_GPIO_H__ */
 

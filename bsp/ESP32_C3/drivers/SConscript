@@ -17,6 +17,9 @@ if GetDepend('BSP_USING_ADC'):
 
 if GetDepend('BSP_USING_I2C'):
     src += ['drv_hw_i2c.c']
+    
+if GetDepend('BSP_USING_SW_I2C'):
+    src += ['drv_sw_i2c.c']
 
 if GetDepend('BSP_USING_PWM'):
     src += ['drv_pwm.c']
@@ -26,6 +29,9 @@ if GetDepend('BSP_USING_HWTIMER'):
 
 if GetDepend('BSP_USING_WIFI'):
     src += ['drv_wifi.c']
+
+if GetDepend('BSP_USING_SPI'):
+    src += ['drv_spi.c']
 
 group = DefineGroup('Drivers', src, depend = [''], CPPPATH = CPPPATH)
 

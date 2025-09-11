@@ -6,6 +6,7 @@
  * Change Logs:
  * Date           Author       Notes
  * 2023-02-14     CDT          first version
+ * 2025-07-25     CDT          support HC32F4A8
  */
 
 /*******************************************************************************
@@ -24,7 +25,15 @@
 #include "irq_config.h"
 #include "drv_usbd.h"
 
-extern rt_err_t rt_hw_usb_board_init(void);
+#if defined(HC32F472)
+    #define USBFS_VBUS_INT_PIN            (rt_base_t)(((rt_uint16_t)USBF_VBUS_PORT * 16) + __CLZ(__RBIT(USBF_VBUS_PIN)))
+#endif
+
+#if !defined(BSP_USING_USBD_HS)
+    extern rt_err_t rt_hw_usbfs_board_init(void);
+#else
+    extern rt_err_t rt_hw_usbhs_board_init(void);
+#endif
 extern void rt_hw_us_delay(rt_uint32_t us);
 
 static usb_core_instance _hc32_usbd;
@@ -44,7 +53,7 @@ static struct ep_id _ep_pool[] =
     {0x4,  USB_EP_ATTR_INT,         USB_DIR_OUT,    64, ID_UNASSIGNED},
     {0x5,  USB_EP_ATTR_ISOC,        USB_DIR_IN,     64, ID_UNASSIGNED},
     {0x5,  USB_EP_ATTR_ISOC,        USB_DIR_OUT,    64, ID_UNASSIGNED},
-#if defined (HC32F4A0)
+#if defined (HC32F4A0) || defined(HC32F4A8)
     {0x6,  USB_EP_ATTR_BULK,        USB_DIR_IN,     64, ID_UNASSIGNED},
     {0x6,  USB_EP_ATTR_BULK,        USB_DIR_OUT,    64, ID_UNASSIGNED},
     {0x7,  USB_EP_ATTR_BULK,        USB_DIR_IN,     64, ID_UNASSIGNED},
@@ -69,12 +78,12 @@ static struct ep_id _ep_pool[] =
     {0xFF, USB_EP_ATTR_TYPE_MASK,   USB_DIR_MASK,   0,  ID_ASSIGNED  },
 };
 
-void usb_udelay(const uint32_t usec)
+__WEAK void usb_udelay(const uint32_t usec)
 {
     rt_hw_us_delay(usec);
 }
 
-void usb_mdelay(const uint32_t msec)
+__WEAK void usb_mdelay(const uint32_t msec)
 {
     rt_thread_mdelay(msec);
 }
@@ -391,6 +400,7 @@ static void usb_wrblanktxfifo(usb_core_instance *pdev, uint32_t epnum)
     }
 }
 
+#if defined(HC32F4A0) || defined(HC32F460) || defined(HC32F4A8)
 #ifdef VBUS_SENSING_ENABLED
 static void usb_sessionrequest_isr(usb_core_instance *pdev)
 {
@@ -403,6 +413,7 @@ static void usb_sessionrequest_isr(usb_core_instance *pdev)
         CLR_REG32_BIT(*pdev->regs.GCCTL, USBFS_GCCTL_STPPCLK | USBFS_GCCTL_GATEHCLK);
     }
 }
+#endif
 #endif
 
 static void usb_resume_isr(usb_core_instance *pdev)
@@ -482,7 +493,6 @@ static void usb_inep_isr(usb_core_instance *pdev)
             if ((u32diepint & TXFEMP) != 0UL)
             {
                 usb_wrblanktxfifo(pdev, u8epnum);
-                WRITE_REG32(pdev->regs.INEP_REGS[u8epnum]->DIEPINT, TXFEMP);
             }
         }
         u8epnum++;
@@ -495,7 +505,7 @@ static void usb_outep_isr(usb_core_instance *pdev)
     uint32_t u32EpIntr;
     uint32_t u32doepint;
     uint8_t u8epnum = 0U;
-    uint32_t u8Xfer;
+    uint32_t u32Xfer;
     uint32_t u32ReadEpSize;
 
     u32EpIntr = usb_getalloepintr(&pdev->regs);
@@ -510,8 +520,8 @@ static void usb_outep_isr(usb_core_instance *pdev)
                 if (pdev->basic_cfgs.dmaen == 1U)
                 {
                     u32ReadEpSize = (READ_REG32(pdev->regs.OUTEP_REGS[u8epnum]->DOEPTSIZ) & USBFS_DOEPTSIZ_XFRSIZ);
-                    u8Xfer = LL_MIN(pdev->dev.out_ep[u8epnum].maxpacket, pdev->dev.out_ep[u8epnum].xfer_len);
-                    pdev->dev.out_ep[u8epnum].xfer_count = u8Xfer - u32ReadEpSize;
+                    u32Xfer = LL_MIN(pdev->dev.out_ep[u8epnum].maxpacket, pdev->dev.out_ep[u8epnum].xfer_len);
+                    pdev->dev.out_ep[u8epnum].xfer_count = u32Xfer - u32ReadEpSize;
                     if (u8epnum != 0U)
                     {
                         pdev->dev.out_ep[u8epnum].xfer_count = pdev->dev.out_ep[u8epnum].xfer_len - u32ReadEpSize;
@@ -575,6 +585,7 @@ static void usb_rxstsqlvl_isr(usb_core_instance *pdev)
     case STS_DATA_UPDT:
         if (0U != u16ByteCnt)
         {
+            RT_ASSERT(RT_IS_ALIGN((uint32_t)ep->xfer_buff, 4UL));
             usb_rdpkt(&pdev->regs, ep->xfer_buff, u16ByteCnt);
             ep->xfer_buff += u16ByteCnt;
             ep->xfer_count += u16ByteCnt;
@@ -707,11 +718,13 @@ static void usb_isr_handler(usb_core_instance *pdev)
         {
             usb_isooutincomplt_isr(pdev);
         }
+#if defined(HC32F4A0) || defined(HC32F460) || defined(HC32F4A8)
 #ifdef VBUS_SENSING_ENABLED
         if ((u32gintsts & VBUSV_INT) != 0UL)
         {
             usb_sessionrequest_isr(pdev);
         }
+#endif
 #endif
     }
 }
@@ -722,6 +735,27 @@ static void usbd_irq_handler(void)
     usb_isr_handler(&_hc32_usbd);
     rt_interrupt_leave();
 }
+
+#if defined(HC32F472)
+void USBFS_Handler(void)
+{
+    usbd_irq_handler();
+}
+
+#ifdef VBUS_SENSING_ENABLED
+static void vbus_irq_handler(void *args)
+{
+    if (PIN_LOW == rt_pin_read(USBFS_VBUS_INT_PIN))
+    {
+        SET_REG32_BIT(_hc32_usbd.regs.DREGS->DCTL, USBFS_DCTL_SDIS);
+    }
+    else
+    {
+        CLR_REG32_BIT(_hc32_usbd.regs.DREGS->DCTL, USBFS_DCTL_SDIS);
+    }
+}
+#endif
+#endif
 
 static rt_err_t _usbd_ep_set_stall(rt_uint8_t address)
 {
@@ -763,20 +797,20 @@ static rt_err_t _usbd_ep_disable(uep_t ep)
     return RT_EOK;
 }
 
-static rt_size_t _usbd_ep_read(rt_uint8_t address, void *buffer)
+static rt_ssize_t _usbd_ep_read(rt_uint8_t address, void *buffer)
 {
     rt_size_t size = 0;
     RT_ASSERT(buffer != RT_NULL);
     return size;
 }
 
-static rt_size_t _usbd_ep_read_prepare(rt_uint8_t address, void *buffer, rt_size_t size)
+static rt_ssize_t _usbd_ep_read_prepare(rt_uint8_t address, void *buffer, rt_size_t size)
 {
     usb_readytorx(&_hc32_usbd, address, buffer, size);
     return size;
 }
 
-static rt_size_t _usbd_ep_write(rt_uint8_t address, void *buffer, rt_size_t size)
+static rt_ssize_t _usbd_ep_write(rt_uint8_t address, void *buffer, rt_size_t size)
 {
     usb_deveptx(&_hc32_usbd, address, buffer, size);
     return size;
@@ -805,19 +839,20 @@ static rt_err_t _usbd_init(rt_device_t device)
     struct hc32_irq_config irq_config;
 
     pdev = (usb_core_instance *)device->user_data;
-    rt_hw_usb_board_init();
-#if !defined(BSP_USING_USBHS)
+#if !defined(BSP_USING_USBD_HS)
+    rt_hw_usbfs_board_init();
     FCG_Fcg1PeriphClockCmd(FCG1_PERIPH_USBFS, ENABLE);
 #else
+    rt_hw_usbhs_board_init();
     FCG_Fcg1PeriphClockCmd(FCG1_PERIPH_USBHS, ENABLE);
 #endif
     /* Parameters */
-#if !defined(BSP_USING_USBHS)
+#if !defined(BSP_USING_USBD_HS)
     stcPortIdentify.u8CoreID = USBFS_CORE_ID;
 #else
     stcPortIdentify.u8CoreID = USBHS_CORE_ID;
 #endif
-#if defined (HC32F4A0)
+#if defined (HC32F4A0) || defined(HC32F4A8)
 #if !defined(BSP_USING_USBHS_PHY_EXTERN)
     stcPortIdentify.u8PhyType = USBHS_PHY_EMBED;
 #else
@@ -836,17 +871,28 @@ static rt_err_t _usbd_init(rt_device_t device)
     /* Enable USB Global interrupt */
     usb_ginten(&pdev->regs);
     /* NVIC Config */
-    irq_config.irq_num = BSP_USB_GLB_IRQ_NUM;
-#if !defined(BSP_USING_USBHS)
+#if !defined(BSP_USING_USBD_HS)
+    irq_config.irq_num = BSP_USBFS_GLB_IRQ_NUM;
     irq_config.int_src = INT_SRC_USBFS_GLB;
+    irq_config.irq_prio = BSP_USBFS_GLB_IRQ_PRIO;
 #else
+    irq_config.irq_num = BSP_USBHS_GLB_IRQ_NUM;
     irq_config.int_src = INT_SRC_USBHS_GLB;
+    irq_config.irq_prio = BSP_USBHS_GLB_IRQ_PRIO;
 #endif
-    irq_config.irq_prio = BSP_USB_GLB_IRQ_PRIO;
+
     /* register interrupt */
     hc32_install_irq_handler(&irq_config,
                              usbd_irq_handler,
                              RT_TRUE);
+#if defined(HC32F472)
+#ifdef VBUS_SENSING_ENABLED
+    /* VBUS Extint config */
+    rt_pin_mode(USBFS_VBUS_INT_PIN, PIN_MODE_INPUT);
+    rt_pin_attach_irq(USBFS_VBUS_INT_PIN, PIN_IRQ_MODE_RISING_FALLING, vbus_irq_handler, (void *)"callbackargs");
+    rt_pin_irq_enable(USBFS_VBUS_INT_PIN, PIN_IRQ_ENABLE);
+#endif
+#endif
     return RT_EOK;
 }
 

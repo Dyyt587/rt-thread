@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2022, RT-Thread Development Team
+ * Copyright (c) 2006-2025, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -14,7 +14,7 @@
 #if defined(RT_USING_FAL)
 #include <fal.h>
 
-//log
+/* log */
 #include <rtdbg.h>
 #define LOG_TAG                "drv.qspiflash"
 
@@ -35,8 +35,8 @@ static void configure_memory()
 #define QSPI_STD_CMD_RSTEN  0x66
 #define QSPI_STD_CMD_RST    0x99
 
-    uint8_t temporary = 0x40;
-    uint32_t err_code;
+    rt_uint8_t temporary = 0x40;
+    rt_uint32_t err_code;
     nrf_qspi_cinstr_conf_t cinstr_cfg =
     {
         .opcode    = QSPI_STD_CMD_RSTEN,
@@ -47,14 +47,14 @@ static void configure_memory()
         .wren      = true
     };
 
-    // Send reset enable
+    /* Send reset enable */
     err_code = nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
     if (NRFX_SUCCESS != err_code)
     {
         LOG_E("\r\n ERROR: QSPI_STD_CMD_RSTEN:0x%x\n", err_code);
         return ;
     }
-    // Send reset command
+    /* Send reset command */
     cinstr_cfg.opcode = QSPI_STD_CMD_RST;
     err_code = nrfx_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
     if (NRFX_SUCCESS != err_code)
@@ -63,7 +63,7 @@ static void configure_memory()
         return ;
     }
 
-    // Switch to qspi mode
+    /* Switch to qspi mode */
     cinstr_cfg.opcode = QSPI_STD_CMD_WRSR;
     cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_2B;
     err_code = nrfx_qspi_cinstr_xfer(&cinstr_cfg, &temporary, NULL);
@@ -73,9 +73,10 @@ static void configure_memory()
         return;
     }
 }
+
 static int init(void)
 {
-    uint32_t err_code;
+    rt_uint32_t err_code;
     nrfx_qspi_config_t config = NRFX_QSPI_DEFAULT_CONFIG(BSP_QSPI_SCK_PIN, BSP_QSPI_CSN_PIN,
                                                          BSP_QSPI_IO0_PIN, BSP_QSPI_IO1_PIN, BSP_QSPI_IO2_PIN, BSP_QSPI_IO3_PIN);
 
@@ -89,9 +90,9 @@ static int init(void)
     return 0;
 }
 
-static int read(long offset, uint8_t *buf, size_t size)
+static int read(long offset, rt_uint8_t *buf, rt_size_t size)
 {
-    uint32_t err_code;
+    rt_uint32_t err_code;
     m_finished = false;
     err_code = nrfx_qspi_read(buf, size, offset);
     WAIT_FOR_PERIPH();
@@ -106,9 +107,9 @@ static int read(long offset, uint8_t *buf, size_t size)
     }
 }
 
-static int write(long offset, const uint8_t *buf, size_t size)
+static int write(long offset, const rt_uint8_t *buf, rt_size_t size)
 {
-    uint32_t err_code;
+    rt_uint32_t err_code;
     m_finished = false;
     err_code = nrfx_qspi_write(buf, size, offset);
     WAIT_FOR_PERIPH();
@@ -123,9 +124,9 @@ static int write(long offset, const uint8_t *buf, size_t size)
     }
 }
 
-static int erase(long offset, size_t size)
+static int erase(long offset, rt_size_t size)
 {
-    uint32_t err_code;
+    rt_uint32_t err_code;
     m_finished = false;
     err_code = nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_64KB, offset);
     WAIT_FOR_PERIPH();
@@ -151,3 +152,4 @@ struct fal_flash_dev nor_flash0 =
 };
 
 #endif
+

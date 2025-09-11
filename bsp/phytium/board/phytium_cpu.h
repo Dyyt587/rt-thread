@@ -16,8 +16,12 @@
 
 #include <rthw.h>
 #include <rtthread.h>
+#include <gicv3.h>
 #include "fparameters.h"
 #include "fio.h"
+#include "faarch.h"
+#include "tlb.h"
+
 #ifdef RT_USING_SMART
 #include"ioremap.h"
 #endif
@@ -28,13 +32,17 @@
     #define MAX_HANDLERS 160
 #endif
 
-#if defined(TARGET_E2000)
+#if defined(TARGET_PE220X)
     #define MAX_HANDLERS 270
+#endif
+
+#if defined(TARGET_PD2408)
+    #define MAX_HANDLERS 1024
 #endif
 
 #define GIC_IRQ_START 0
 #define GIC_ACK_INTID_MASK 0x000003ff
-
+#define RT_CORE_AFF(x) (CORE##x##_AFF | 0x80000000)
 
 rt_uint64_t get_main_cpu_affval(void);
 
@@ -43,29 +51,61 @@ rt_inline rt_uint32_t platform_get_gic_dist_base(void)
     return GICV3_DISTRIBUTOR_BASE_ADDR;
 }
 
-#if defined(TARGET_ARMV8_AARCH64)
-
 /* the basic constants and interfaces needed by gic */
-rt_inline rt_uint32_t platform_get_gic_redist_base(void)
+rt_inline uintptr_t platform_get_gic_redist_base(void)
 {
-#if RT_CPUS_NR <= 2
-        return GICV3_RD_BASE_ADDR + 2 * GICV3_RD_OFFSET;
+    uintptr_t redis_base, mpidr_aff, gicr_typer_aff;
+    mpidr_aff = (uintptr_t)(GetAffinity() & CORE_AFF_MASK);
+
+    for (redis_base = GICV3_RD_BASE_ADDR; redis_base < GICV3_RD_BASE_ADDR + GICV3_RD_SIZE; redis_base += GICV3_RD_OFFSET)
+    {
+#ifdef RT_USING_SMART
+        uintptr_t redis_base_virtual = (uintptr_t)rt_ioremap((void *)redis_base, GICV3_RD_OFFSET);
+        rt_hw_tlb_invalidate_all();
+        if (redis_base_virtual == 0)
+        {
+            continue;
+        }
+#if defined(TARGET_ARMV8_AARCH64)
+        gicr_typer_aff = GIC_RDIST_TYPER(redis_base_virtual) >> 32;
 #else
-        return GICV3_RD_BASE_ADDR;
+        gicr_typer_aff = GIC_RDIST_TYPER(redis_base_virtual + 0x4);
 #endif
+        if (mpidr_aff == gicr_typer_aff)
+        {
+            return redis_base_virtual;
+        }
+        else
+        {
+            rt_iounmap(redis_base_virtual);
+        }
+#else
+#if defined(TARGET_ARMV8_AARCH64)
+        gicr_typer_aff = GIC_RDIST_TYPER(redis_base) >> 32;
+#else
+        gicr_typer_aff = GIC_RDIST_TYPER(redis_base + 0x4);
+#endif
+        if (mpidr_aff == gicr_typer_aff)
+        {
+            return redis_base;
+        }
+#endif
+    }
+
     return 0;
 }
 
+
+#if defined(TARGET_ARMV8_AARCH64)
+
 rt_inline rt_uint32_t platform_get_gic_cpu_base(void)
 {
-    return 0U; /* unused in gicv3 */
+    return 0; /* unused in gicv3 */
 }
 
 #endif
 
 
 int phytium_cpu_id_mapping(int cpu_id);
-
-
 
 #endif // !

@@ -1,5 +1,5 @@
  /*
- * Copyright (c) 2006-2022, RT-Thread Development Team
+ * Copyright (c) 2006-2025, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -254,6 +254,9 @@ static int _uart_putc(struct rt_serial_device *serial, char c)
         {
         }
     }
+#if defined(SOC_NRF5340)
+    return 1;
+#endif /* SOC_NRF5340*/
     return rtn;
 }
 
@@ -267,6 +270,7 @@ static int _uart_getc(struct rt_serial_device *serial)
     {
         p_cb = (drv_uart_cb_t*)serial->parent.user_data;
     }
+
     if(p_cb->rx_length)
     {
         ch = p_cb->rx_buffer[0];
@@ -299,6 +303,9 @@ int rt_hw_uart_init(void)
 
 #ifdef BSP_USING_UART1
     m_serial_1.config = config;
+#if defined(SOC_NRF5340)
+    m_serial_1.config.baud_rate =  1000000;
+#endif /* SOC_NRF5340*/
     m_serial_1.ops = &_uart_ops;
     m_uarte1_cb.serial = &m_serial_1;
     rt_hw_serial_register(&m_serial_1, "uart1", \
@@ -325,3 +332,4 @@ int rt_hw_uart_init(void)
 }
 #endif /* defined(BSP_USING_UART0) || defined(BSP_USING_UART1) */
 #endif /* BSP_USING_UART */
+

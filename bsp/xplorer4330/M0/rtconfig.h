@@ -39,8 +39,8 @@
 #define RT_TIMER_THREAD_PRIO    4
 // <integer name="RT_TIMER_THREAD_STACK_SIZE" description="The stack size of timer thread" default="512" />
 #define RT_TIMER_THREAD_STACK_SIZE  512
-// <integer name="RT_TIMER_TICK_PER_SECOND" description="The soft-timer tick per second" default="10" />
-#define RT_TIMER_TICK_PER_SECOND    100
+// <integer name="RT_TICK_PER_SECOND" description="The soft-timer tick per second" default="10" />
+#define RT_TICK_PER_SECOND    100
 // </section>
 
 // <section name="IPC" description="Inter-Thread communication" default="always" >
@@ -90,8 +90,8 @@
 //#define RT_USING_I2C
 // <bool name="RT_USING_RTC" description="Using RTC Device Driver Framework" default="true" />
 //#define RT_USING_RTC
-// <integer name="RT_MMCSD_THREAD_PREORITY" description="The prority of mmcsd thread" default="15" />
-#define RT_MMCSD_THREAD_PREORITY    15
+// <integer name="RT_MMCSD_THREAD_PRIORITY" description="The prority of mmcsd thread" default="15" />
+#define RT_MMCSD_THREAD_PRIORITY    15
 // <section name="RT_USING_CONSOLE" description="Using console" default="true" >
 #define RT_USING_CONSOLE
 // <integer name="RT_CONSOLEBUF_SIZE" description="The buffer size for console output" default="128" />

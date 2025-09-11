@@ -26,13 +26,14 @@
 | **片上外设**      | **支持情况** | **备注**                              |
 | :-----------------| :----------: | :------------------------------------- |
 | UART              |     支持     | UART1 打印输出 |
-| GPIO              |     支持     | GPIO 引脚电平输入输出，中断 |
+| [GPIO](./doc/drivers/gpio.md)              |     支持     | GPIO 引脚电平输入输出，中断 |
 | XMAC              |     支持     | XMAC 网卡初始化和运行 |
 | SDMMC             |     支持     | SD0/SD1 读写 SD 卡或 eMMC 颗粒 |
 | PWM               |     支持     | PWM 脉宽调制电压输出        |
 | CAN               |     支持     | CAN/CANFD设备通信 |
 | I2C               |     支持     | I2C设备通信 |
 | SPI               |     支持     | SPI设备通信 |
+| QSPI              |     支持     | QSPI设备通信 |
 | DC                |     支持     | DC显示设备 |
 | USB3(XHCI)        |     支持     | USB3(XHCI)设备支持|
 | USB2(Host/Device) |     支持     | USB2(Host/Device)设备支持|
@@ -42,6 +43,7 @@
 | Phytium PI          |     支持     | 支持SMP |
 | E2000D              |     支持     | 支持SMP |
 | E2000Q              |     支持     | 支持SMP |
+| PD2408              |     支持     | 支持SMP |
 
 ##  3. 如何在 Ubuntu, RT-Thread env, RT-Thread Studio 环境下使用此BSP
 
@@ -58,6 +60,7 @@
 2. 启动 RT-Thread env 应用程序，在交互界面可以使用`cd`指令进入`aarch32`或`aarch64`目录
 3. 按照指导安装 [aarch32](./aarch32/README.md)或[aarch64](./aarch64/README.md)编译链，并进行相关配置
 4. 按照指导[启动镜像程序](./doc/how_to_flashed_binary.md)
+5. 参考[使用文件系统](./doc/how_to_use_file_system.md)制作和使用文件系统
 
 ### RT-Thread Studio 环境
 
@@ -65,7 +68,7 @@
 
 ## 4. 如何添加开发板
 
->注:BSP已适配E2000Q_DEMO，E2000D_DEMO，PHYTIUMPI开发板，若需填加系列其他开发板，请按以下步骤进行
+>注:BSP已适配E2000Q_DEMO，E2000D_DEMO，PHYTIUMPI，PD2408_TEST_A，PD2408_TEST_B开发板，若需填加系列其他开发板，请按以下步骤进行
 
 - 请[阅读文档](./doc/how_to_add_cus_board.md)，按照指导添加自定义开发板
 
@@ -76,6 +79,8 @@
 - [基于飞腾BSP开发lvgl应用程序](./doc/use_phytium_dc_with_lvgl.md)
 
 - [Phytium_PI上开发和固化RT-Thread程序](./doc/use_phytium_pi_sd_image.md)，解决Phytium PI上使用RT-Thread读写操作影响 SD 卡的固件问题
+
+- [C++支持](./doc/cpp_support.md)
 
 ## 6. 维护人信息
 

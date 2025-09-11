@@ -116,6 +116,12 @@ SECTIONS
          *      RT-Thread related sections - Start
          *
         *********************************************/
+        /* section information for utest */
+        . = ALIGN(4);
+        __rt_utest_tc_tab_start = .;
+        KEEP(*(UtestTcTab))
+        __rt_utest_tc_tab_end = .;
+
         /* section information for finsh shell */
         . = ALIGN(4);
         __fsymtab_start = .;
@@ -140,6 +146,12 @@ SECTIONS
         __rtmsymtab_end = .;
 
         /* RT-Thread related sections - end */
+
+        /* section information for usbh class */
+        . = ALIGN(8);
+        __usbh_class_info_start__ = .;
+        KEEP(*(.usbh_class_info))
+        __usbh_class_info_end__ = .;
 
     } > XPI0
 
@@ -298,7 +310,6 @@ SECTIONS
     .sdram (NOLOAD) : {
         . = ALIGN(8);
         __sdram_start__ = .;
-        . += SDRAM_SIZE;
         __sdram_end__ = .;
     } > SDRAM
 }

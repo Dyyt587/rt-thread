@@ -6,26 +6,28 @@
  * Change Logs:
  * Date           Author            Notes
  * 2022-06-27     lianghongquan     first version
- * 2023-02-22     CDT               add hc32f4a0 support
+ * 2023-02-22     CDT               support HC32F4A0
+ * 2024-11-20     CDT               support HC32F448
+ * 2025-01-03     CDT               support HC32F472
  */
 
 #include <board.h>
 
 #include "drv_config.h"
-#include <drivers/rt_drv_pwm.h>
+#include <drivers/dev_pwm.h>
 #include <pwm_tmr_config.h>
 
 #if defined(BSP_USING_PWM)
 
-//#define DRV_DEBUG
+// #define DRV_DEBUG
 #define LOG_TAG             "drv_pwm"
 #include <drv_log.h>
 
 #if defined(BSP_USING_PWM_TMRA)
 
-#if defined(HC32F460)
+#if defined(HC32F460) || defined(HC32F448)
     #define TMRA_CHANNEL_NUM_MAX     8U
-#elif defined(HC32F4A0)
+#elif defined(HC32F4A0) || defined(HC32F472) || defined(HC32F4A8) || defined (HC32F334)
     #define TMRA_CHANNEL_NUM_MAX     4U
 #endif
 
@@ -127,7 +129,7 @@ static rt_uint32_t tmra_get_clk_notdiv(CM_TMRA_TypeDef *TMRAx)
     rt_uint32_t u32clkFreq;
     rt_uint32_t u32BusName;
 
-#if defined(HC32F4A0)
+#if defined(HC32F4A0) || defined(HC32F448) || defined(HC32F472) || defined(HC32F4A8) || defined (HC32F334)
     switch ((rt_uint32_t)TMRAx)
     {
     case (rt_uint32_t)CM_TMRA_1:
@@ -680,8 +682,11 @@ static struct rt_pwm_ops _tmra_ops =
 #endif  /* BSP_USING_PWM_TMRA */
 
 #if defined(BSP_USING_PWM_TMR4)
-
-#define TMR4_CHANNEL_NUM_MAX     6U
+#if defined (HC32F4A8) || defined (HC32F472) || defined (HC32F4A0) || defined (HC32F460)
+    #define TMR4_CHANNEL_NUM_MAX     6U
+#elif defined (HC32F448) || defined (HC32F334)
+    #define TMR4_CHANNEL_NUM_MAX     8U
+#endif
 
 enum
 {
@@ -726,20 +731,12 @@ static struct hc32_pwm_tmr4 g_pwm_tmr4_array[] =
 static rt_uint32_t tmr4_get_clk_notdiv(CM_TMR4_TypeDef *TMR4x)
 {
     rt_uint32_t u32clkFreq;
-    switch ((rt_uint32_t)TMR4x)
-    {
-    case (rt_uint32_t)CM_TMR4_1:
-    case (rt_uint32_t)CM_TMR4_2:
-    case (rt_uint32_t)CM_TMR4_3:
-#if defined(HC32F4A0)
-        u32clkFreq = CLK_GetBusClockFreq(CLK_BUS_PCLK0);
+#if defined(HC32F4A0) || defined(HC32F448) || defined(HC32F472) || defined(HC32F4A8) || defined (HC32F334)
+    u32clkFreq = CLK_GetBusClockFreq(CLK_BUS_PCLK0);
 #elif defined(HC32F460)
-        u32clkFreq = CLK_GetBusClockFreq(CLK_BUS_PCLK1);
+    u32clkFreq = CLK_GetBusClockFreq(CLK_BUS_PCLK1);
 #endif
-        break;
-    default:
-        break;
-    }
+
     return (u32clkFreq ? u32clkFreq : HCLK_VALUE);
 }
 
@@ -938,7 +935,11 @@ static rt_err_t tmr4_pwm_set(struct rt_device_pwm *device, struct rt_pwm_configu
 static void enable_tmr4_unit_clk(void)
 {
 #ifdef BSP_USING_PWM_TMR4_1
+#if defined(HC32F472) || defined (HC32F334)
+    FCG_Fcg2PeriphClockCmd(FCG2_PERIPH_TMR4, ENABLE);
+#else
     FCG_Fcg2PeriphClockCmd(FCG2_PERIPH_TMR4_1, ENABLE);
+#endif
 #endif
 #ifdef BSP_USING_PWM_TMR4_2
     FCG_Fcg2PeriphClockCmd(FCG2_PERIPH_TMR4_2, ENABLE);
@@ -962,13 +963,13 @@ static rt_err_t pwm_tmr4_init(struct hc32_pwm_tmr4 *device)
         {
             TMR4_OC_Init(TMR4x, i, &device->stcTmr4OcInit);
             TMR4_PWM_Init(TMR4x, (i >> 1), &device->stcTmr4PwmInit);
-#if defined(HC32F4A0)
+#if defined(HC32F4A0) || defined(HC32F448) || defined(HC32F472) || defined(HC32F4A8) || defined (HC32F334)
             TMR4_PWM_SetPortOutputMode(TMR4x, i, TMR4_PWM_PIN_OUTPUT_NORMAL);
 #endif
             tmr4_pwm_set_cmpmode(TMR4x, i);
         }
     }
-#if defined(HC32F4A0)
+#if defined(HC32F4A0) || defined(HC32F448) || defined(HC32F472) || defined(HC32F4A8) || defined (HC32F334)
     TMR4_PWM_MainOutputCmd(TMR4x, ENABLE);
 #endif
     TMR4_Start(TMR4x);
@@ -996,6 +997,14 @@ static void pwm_tmr4_get_channel(void)
 #endif
 #ifdef BSP_USING_PWM_TMR4_1_OWL
     g_pwm_tmr4_array[PWM_TMR4_1_INDEX].channel |= (1 << 5);
+#endif
+#if defined (HC32F448) || defined (HC32F334)
+#ifdef BSP_USING_PWM_TMR4_1_OXH
+    g_pwm_tmr4_array[PWM_TMR4_1_INDEX].channel |= (1 << 6);
+#endif
+#ifdef BSP_USING_PWM_TMR4_1_OXL
+    g_pwm_tmr4_array[PWM_TMR4_1_INDEX].channel |= (1 << 7);
+#endif
 #endif
 #endif
 #ifdef BSP_USING_PWM_TMR4_2
@@ -1104,6 +1113,12 @@ enum
 #ifdef BSP_USING_PWM_TMR6_8
     PWM_TMR6_8_INDEX,
 #endif
+#ifdef BSP_USING_PWM_TMR6_9
+    PWM_TMR6_9_INDEX,
+#endif
+#ifdef BSP_USING_PWM_TMR6_10
+    PWM_TMR6_10_INDEX,
+#endif
     PWM_TMR6_UNIT_NUM,
 };
 
@@ -1144,28 +1159,19 @@ static struct hc32_pwm_tmr6 g_pwm_tmr6_array[] =
 #ifdef BSP_USING_PWM_TMR6_8
     PWM_TMR6_8_CONFIG,
 #endif
+#ifdef BSP_USING_PWM_TMR6_9
+    PWM_TMR6_9_CONFIG,
+#endif
+#ifdef BSP_USING_PWM_TMR6_10
+    PWM_TMR6_10_CONFIG,
+#endif
 };
 
 static rt_uint32_t tmr6_get_clk_notdiv(CM_TMR6_TypeDef *TMR6x)
 {
     rt_uint32_t u32clkFreq;
-    switch ((rt_uint32_t)TMR6x)
-    {
-    case (rt_uint32_t)CM_TMR6_1:
-    case (rt_uint32_t)CM_TMR6_2:
-    case (rt_uint32_t)CM_TMR6_3:
-#if defined(HC32F4A0)
-    case (rt_uint32_t)CM_TMR6_4:
-    case (rt_uint32_t)CM_TMR6_5:
-    case (rt_uint32_t)CM_TMR6_6:
-    case (rt_uint32_t)CM_TMR6_7:
-    case (rt_uint32_t)CM_TMR6_8:
-#endif
-        u32clkFreq = CLK_GetBusClockFreq(CLK_BUS_PCLK0);
-        break;
-    default:
-        break;
-    }
+    u32clkFreq = CLK_GetBusClockFreq(CLK_BUS_PCLK0);
+
     return (u32clkFreq ? u32clkFreq : HCLK_VALUE);
 }
 
@@ -1201,7 +1207,7 @@ static rt_uint32_t tmr6_get_clk_bydiv(CM_TMR6_TypeDef *TMR6x)
     case (TMR6_CLK_DIV1024):
         u32clkFreq /= 1024;
         break;
-#if defined(HC32F4A0)
+#if defined(HC32F4A0) || defined(HC32F448) || defined(HC32F472) || defined(HC32F4A8) || defined (HC32F334)
     case (TMR6_CLK_DIV32):
         u32clkFreq /= 32;
         break;
@@ -1222,18 +1228,18 @@ static void tmr6_duyt100or0_output(CM_TMR6_TypeDef *TMR6x, rt_uint32_t channel, 
 {
     if (compare_value <= 1)
     {
-#if defined(HC32F4A0)
+#if defined(HC32F4A0) || defined(HC32F448) || defined(HC32F472) || defined(HC32F4A8) || defined (HC32F334)
         TMR6_PWM_SetPolarity(TMR6x, channel, TMR6_STAT_OVF, TMR6_PWM_LOW);
 #elif defined(HC32F460)
-        TMR6_PWM_SetPolarity(TMR6x, TMR6_STAT_MATCH_PERIOD, TMR6_PWM_LOW);
+        TMR6_PWM_SetPolarity(TMR6x, channel, TMR6_STAT_MATCH_PERIOD, TMR6_PWM_LOW);
 #endif
     }
     else
     {
-#if defined(HC32F4A0)
+#if defined(HC32F4A0) || defined(HC32F448) || defined(HC32F472) || defined(HC32F4A8) || defined (HC32F334)
         TMR6_PWM_SetPolarity(TMR6x, channel, TMR6_STAT_OVF, TMR6_PWM_HIGH);
 #elif defined(HC32F460)
-        TMR6_PWM_SetPolarity(TMR6x, TMR6_STAT_MATCH_PERIOD, TMR6_PWM_HIGH);
+        TMR6_PWM_SetPolarity(TMR6x, channel, TMR6_STAT_MATCH_PERIOD, TMR6_PWM_HIGH);
 #endif
     }
 }
@@ -1394,6 +1400,12 @@ static void enable_tmr6_unit_clk(void)
 #ifdef BSP_USING_PWM_TMR6_8
     FCG_Fcg2PeriphClockCmd(FCG2_PERIPH_TMR6_8, ENABLE);
 #endif
+#ifdef BSP_USING_PWM_TMR6_9
+    FCG_Fcg2PeriphClockCmd(FCG2_PERIPH_TMR6_9, ENABLE);
+#endif
+#ifdef BSP_USING_PWM_TMR6_10
+    FCG_Fcg2PeriphClockCmd(FCG2_PERIPH_TMR6_10, ENABLE);
+#endif
 }
 
 static rt_err_t pwm_tmr6_init(struct hc32_pwm_tmr6 *device)
@@ -1480,6 +1492,22 @@ static void pwm_tmr6_get_channel(void)
 #endif
 #ifdef BSP_USING_PWM_TMR6_8_B
     g_pwm_tmr6_array[PWM_TMR6_8_INDEX].channel |= (1 << 1);
+#endif
+#endif
+#ifdef BSP_USING_PWM_TMR6_9
+#ifdef BSP_USING_PWM_TMR6_9_A
+    g_pwm_tmr6_array[PWM_TMR6_9_INDEX].channel |= (1 << 0);
+#endif
+#ifdef BSP_USING_PWM_TMR6_9_B
+    g_pwm_tmr6_array[PWM_TMR6_9_INDEX].channel |= (1 << 1);
+#endif
+#endif
+#ifdef BSP_USING_PWM_TMR6_10
+#ifdef BSP_USING_PWM_TMR6_10_A
+    g_pwm_tmr6_array[PWM_TMR6_10_INDEX].channel |= (1 << 0);
+#endif
+#ifdef BSP_USING_PWM_TMR6_10_B
+    g_pwm_tmr6_array[PWM_TMR6_10_INDEX].channel |= (1 << 1);
 #endif
 #endif
 }

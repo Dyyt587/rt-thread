@@ -2,6 +2,36 @@ menu "Hardware Drivers Config"
 
 menu "Onboard Peripheral Drivers"
 
+    config BSP_USING_ARDUINO
+        bool "Compatible with Arduino Ecosystem (RTduino)"
+        select PKG_USING_RTDUINO
+        select BSP_USING_STLINK_TO_USART
+        select BSP_USING_UART1
+        select BSP_USING_UART2
+        select BSP_USING_GPIO
+        select BSP_USING_ADC
+        select BSP_USING_ADC3
+        select BSP_USING_DAC
+        select BSP_USING_DAC1
+        select BSP_USING_PWM
+        select BSP_USING_PWM1
+        select BSP_USING_PWM1_CH2
+        select BSP_USING_PWM1_CH3
+        select BSP_USING_PWM2
+        select BSP_USING_PWM2_CH3
+        select BSP_USING_PWM2_CH4
+        select BSP_USING_PWM4
+        select BSP_USING_PWM4_CH1
+        select BSP_USING_I2C
+        select BSP_USING_I2C4
+        select BSP_USING_I2C5
+        select BSP_USING_SOFT_SPI
+        select BSP_USING_SOFT_SPI1
+        imply RTDUINO_USING_SERVO
+        imply RTDUINO_USING_WIRE
+        imply RTDUINO_USING_SPI
+        default n
+
     config BSP_USING_USB_TO_USART
         bool "Enable USB TO USART (uart1)"
         select BSP_USING_UART
@@ -30,7 +60,7 @@ menu "Onboard Peripheral Drivers"
             comment "set rts pin number "
             config BSP_RS485_RTS_PIN
                 int "RS485 rts pin number"
-                range 1 176
+                range 0 143
                 default 104
 
             config RS485_UART_DEVICE_NAME
@@ -255,89 +285,206 @@ menu "On-chip Peripheral Drivers"
         default y
         select RT_USING_SERIAL
         if BSP_USING_UART
-            config BSP_USING_UART1
-                bool "Enable UART1"
-                default y
+            config BSP_STM32_UART_V1_TX_TIMEOUT
+                int "UART TX timeout"
+                default 2000
+                depends on RT_USING_SERIAL_V1
+            menuconfig BSP_USING_UART1
+            bool "Enable UART1"
+            default y
+            if BSP_USING_UART1
+                config BSP_UART1_RX_USING_DMA
+                    bool "Enable UART1 RX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
 
-            config BSP_UART1_RX_USING_DMA
-                bool "Enable UART1 RX DMA"
-                depends on BSP_USING_UART1 && RT_SERIAL_USING_DMA
-                default n
+                config BSP_UART1_TX_USING_DMA
+                    bool "Enable UART1 TX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
 
-            config BSP_UART1_TX_USING_DMA
-                bool "Enable UART1 TX DMA"
-                depends on BSP_USING_UART1 && RT_SERIAL_USING_DMA
-                default n
+                config BSP_UART1_RX_BUFSIZE
+                    int "Set UART1 RX buffer size"
+                    range 64 65535
+                    depends on BSP_USING_UART1 && RT_USING_SERIAL_V2
+                    default 256
 
-            config BSP_USING_UART2
-                bool "Enable UART2"
-                default n
+                config BSP_UART1_TX_BUFSIZE
+                    int "Set UART1 TX buffer size"
+                    range 0 65535
+                    depends on BSP_USING_UART1 && RT_USING_SERIAL_V2
+                    default 0
 
-            config BSP_UART2_RX_USING_DMA
-                bool "Enable UART2 RX DMA"
-                depends on BSP_USING_UART2 && RT_SERIAL_USING_DMA
-                default n
+                config BSP_UART1_DMA_PING_BUFSIZE
+                    int "Set UART1 RX DMA ping-pong buffer size"
+                    range 32 65535
+                    depends on BSP_UART1_RX_USING_DMA && RT_USING_SERIAL_V2 
+                    default 64  
+            endif
+            menuconfig BSP_USING_UART2
+            bool "Enable UART2"
+            default n
+            if BSP_USING_UART2
+                config BSP_UART2_RX_USING_DMA
+                    bool "Enable UART2 RX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
 
-            config BSP_UART2_TX_USING_DMA
-                bool "Enable UART2 TX DMA"
-                depends on BSP_USING_UART2 && RT_SERIAL_USING_DMA
-                default n
+                config BSP_UART2_TX_USING_DMA
+                    bool "Enable UART2 TX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
 
-            config BSP_USING_UART3
-                bool "Enable UART3"
-                default n
+                config BSP_UART2_RX_BUFSIZE
+                    int "Set UART2 RX buffer size"
+                    range 64 65535
+                    depends on BSP_USING_UART2 && RT_USING_SERIAL_V2
+                    default 256
 
-            config BSP_UART3_RX_USING_DMA
-                bool "Enable UART3 RX DMA"
-                depends on BSP_USING_UART3 && RT_SERIAL_USING_DMA
-                default n
+                config BSP_UART2_TX_BUFSIZE
+                    int "Set UART2 TX buffer size"
+                    range 0 65535
+                    depends on BSP_USING_UART2 && RT_USING_SERIAL_V2
+                    default 0
 
-            config BSP_UART3_TX_USING_DMA
-                bool "Enable UART3 TX DMA"
-                depends on BSP_USING_UART3 && RT_SERIAL_USING_DMA
-                default n
+                config BSP_UART2_DMA_PING_BUFSIZE
+                    int "Set UART2 RX DMA ping-pong buffer size"
+                    range 32 65535
+                    depends on BSP_UART2_RX_USING_DMA && RT_USING_SERIAL_V2 
+                    default 64  
+            endif
+            menuconfig BSP_USING_UART3
+            bool "Enable UART3"
+            default n
+            if BSP_USING_UART3
+                config BSP_UART3_RX_USING_DMA
+                    bool "Enable UART3 RX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
 
-            config BSP_USING_UART4
-                bool "Enable UART4"
-                default n
+                config BSP_UART3_TX_USING_DMA
+                    bool "Enable UART3 TX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
 
-            config BSP_UART4_RX_USING_DMA
-                bool "Enable UART4 RX DMA"
-                depends on BSP_USING_UART4 && RT_SERIAL_USING_DMA
-                default n
+                config BSP_UART3_RX_BUFSIZE
+                    int "Set UART3 RX buffer size"
+                    range 64 65535
+                    depends on BSP_USING_UART3 && RT_USING_SERIAL_V2
+                    default 256
 
-            config BSP_UART4_TX_USING_DMA
-                bool "Enable UART4 TX DMA"
-                depends on BSP_USING_UART4 && RT_SERIAL_USING_DMA
-                default n
+                config BSP_UART3_TX_BUFSIZE
+                    int "Set UART3 TX buffer size"
+                    range 0 65535
+                    depends on BSP_USING_UART3 && RT_USING_SERIAL_V2
+                    default 0
 
-            config BSP_USING_UART5
-                bool "Enable UART5"
-                default n
+                config BSP_UART3_DMA_PING_BUFSIZE
+                    int "Set UART3 RX DMA ping-pong buffer size"
+                    range 32 65535
+                    depends on BSP_UART3_RX_USING_DMA && RT_USING_SERIAL_V2
+                    default 64
+            endif
 
-            config BSP_UART5_RX_USING_DMA
-                bool "Enable UART5 RX DMA"
-                depends on BSP_USING_UART5 && RT_SERIAL_USING_DMA
-                default n
+            menuconfig BSP_USING_UART4
+            bool "Enable UART4"
+            default n
+            if BSP_USING_UART4
+                config BSP_UART4_RX_USING_DMA
+                    bool "Enable UART4 RX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
 
-            config BSP_UART5_TX_USING_DMA
-                bool "Enable UART5 TX DMA"
-                depends on BSP_USING_UART5 && RT_SERIAL_USING_DMA
-                default n
+                config BSP_UART4_TX_USING_DMA
+                    bool "Enable UART4 TX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
 
-            config BSP_USING_UART6
-                bool "Enable UART6"
-                default n
+                config BSP_UART4_RX_BUFSIZE
+                    int "Set UART4 RX buffer size"
+                    range 64 65535
+                    depends on BSP_USING_UART4 && RT_USING_SERIAL_V2
+                    default 256
 
-            config BSP_UART6_RX_USING_DMA
-                bool "Enable UART6 RX DMA"
-                depends on BSP_USING_UART6 && RT_SERIAL_USING_DMA
-                default n
+                config BSP_UART4_TX_BUFSIZE
+                    int "Set UART4 TX buffer size"
+                    range 0 65535
+                    depends on BSP_USING_UART4 && RT_USING_SERIAL_V2
+                    default 0
 
-            config BSP_UART6_TX_USING_DMA
-                bool "Enable UART6 TX DMA"
-                depends on BSP_USING_UART6 && RT_SERIAL_USING_DMA
-                default n
+                config BSP_UART4_DMA_PING_BUFSIZE
+                    int "Set UART4 RX DMA ping-pong buffer size"
+                    range 32 65535
+                    depends on BSP_UART4_RX_USING_DMA && RT_USING_SERIAL_V2
+                    default 64
+            endif
+
+            menuconfig BSP_USING_UART5
+            bool "Enable UART5"
+            default n
+            if BSP_USING_UART5
+                config BSP_UART5_RX_USING_DMA
+                    bool "Enable UART5 RX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
+
+                config BSP_UART5_TX_USING_DMA
+                    bool "Enable UART5 TX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
+
+                config BSP_UART5_RX_BUFSIZE
+                    int "Set UART5 RX buffer size"
+                    range 64 65535
+                    depends on BSP_USING_UART5 && RT_USING_SERIAL_V2
+                    default 256
+
+                config BSP_UART5_TX_BUFSIZE
+                    int "Set UART5 TX buffer size"
+                    range 0 65535
+                    depends on BSP_USING_UART5 && RT_USING_SERIAL_V2
+                    default 0
+
+                config BSP_UART5_DMA_PING_BUFSIZE
+                    int "Set UART5 RX DMA ping-pong buffer size"
+                    range 32 65535
+                    depends on BSP_UART5_RX_USING_DMA && RT_USING_SERIAL_V2
+                    default 64
+            endif
+
+            menuconfig BSP_USING_UART6
+            bool "Enable UART6"
+            default n
+            if BSP_USING_UART6
+                config BSP_UART6_RX_USING_DMA
+                    bool "Enable UART6 RX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
+
+                config BSP_UART6_TX_USING_DMA
+                    bool "Enable UART6 TX DMA"
+                    depends on RT_SERIAL_USING_DMA
+                    default n
+
+                config BSP_UART6_RX_BUFSIZE
+                    int "Set UART6 RX buffer size"
+                    range 64 65535
+                    depends on BSP_USING_UART6 && RT_USING_SERIAL_V2
+                    default 256
+
+                config BSP_UART6_TX_BUFSIZE
+                    int "Set UART6 TX buffer size"
+                    range 0 65535
+                    depends on BSP_USING_UART6 && RT_USING_SERIAL_V2
+                    default 0
+
+                config BSP_UART6_DMA_PING_BUFSIZE
+                    int "Set UART6 RX DMA ping-pong buffer size"
+                    range 32 65535
+                    depends on BSP_UART6_RX_USING_DMA && RT_USING_SERIAL_V2
+                    default 64
+            endif
+
         endif
 
     menuconfig BSP_USING_TIM
@@ -363,10 +510,24 @@ menu "On-chip Peripheral Drivers"
         default n
         select RT_USING_PWM
         if BSP_USING_PWM
+        menuconfig BSP_USING_PWM1
+            bool "Enable timer1 output PWM"
+            default n
+            if BSP_USING_PWM1
+                config BSP_USING_PWM1_CH2
+                    bool "Enable PWM1 channel2"
+                    default n
+                config BSP_USING_PWM1_CH3
+                    bool "Enable PWM1 channel3"
+                    default n
+            endif
         menuconfig BSP_USING_PWM2
             bool "Enable timer2 output PWM"
             default n
             if BSP_USING_PWM2
+                config BSP_USING_PWM2_CH3
+                    bool "Enable PWM2 channel3"
+                    default n
                 config BSP_USING_PWM2_CH4
                     bool "Enable PWM2 channel4"
                     default n
@@ -382,6 +543,14 @@ menu "On-chip Peripheral Drivers"
             if BSP_USING_PWM3
                 config BSP_USING_PWM3_CH4
                     bool "Enable PWM3 channel4"
+                    default n
+            endif
+        menuconfig BSP_USING_PWM4
+            bool "Enable timer4 output PWM"
+            default n
+            if BSP_USING_PWM4
+                config BSP_USING_PWM4_CH1
+                    bool "Enable PWM4 channel1"
                     default n
             endif
         menuconfig BSP_USING_PWM14
@@ -402,7 +571,7 @@ menu "On-chip Peripheral Drivers"
         bool "Enable soft SPI BUS"
         default n
         select RT_USING_SPI
-        select RT_USING_SPI_BITOPS
+        select RT_USING_SOFT_SPI
         select RT_USING_PIN
         if BSP_USING_SOFT_SPI
             menuconfig BSP_USING_SOFT_SPI1
@@ -410,17 +579,17 @@ menu "On-chip Peripheral Drivers"
                 default n
                 if BSP_USING_SOFT_SPI1
                     config BSP_S_SPI1_SCK_PIN
-                        int "soft spi1 sck pin number"
-                        range 1 176
-                        default 16
+                        int "soft spi1 sck pin number(G,5)"
+                        range 0 143
+                        default 101
                     config BSP_S_SPI1_MISO_PIN
-                        int "soft spi1 miso pin number"
-                        range 1 176
-                        default 18
+                        int "soft spi1 miso pin numbe(G,3)"
+                        range 0 143
+                        default 99
                     config BSP_S_SPI1_MOSI_PIN
-                        int "soft spi1 mosi pin number"
-                        range 1 176
-                        default 91
+                        int "soft spi1 mosi pin number(G,1)"
+                        range 0 143
+                        default 97
                 endif
 
             menuconfig BSP_USING_SOFT_SPI2
@@ -429,15 +598,15 @@ menu "On-chip Peripheral Drivers"
                 if BSP_USING_SOFT_SPI2
                     config BSP_S_SPI2_SCK_PIN
                         int "soft spi2 sck pin number"
-                        range 1 176
+                        range 0 143
                         default 19
                     config BSP_S_SPI2_MISO_PIN
                         int "soft spi2 miso pin number"
-                        range 1 176
+                        range 0 143
                         default 20
                     config BSP_S_SPI2_MOSI_PIN
                         int "soft spi2 mosi pin number"
-                        range 1 176
+                        range 0 143
                         default 21
                 endif
         endif
@@ -485,6 +654,9 @@ menu "On-chip Peripheral Drivers"
         if BSP_USING_ADC
             config BSP_USING_ADC1
                 bool "Enable ADC1"
+                default n
+            config BSP_USING_ADC3
+                bool "Enable ADC3"
                 default n
         endif
 
@@ -541,6 +713,40 @@ menu "On-chip Peripheral Drivers"
                         int "I2C3 sda pin number, PE1"
                         range 0 143
                         default 65
+                endif
+            
+            menuconfig BSP_USING_I2C4
+                bool "Enable I2C4 BUS for RTduino(software simulation)"
+                default n
+                select RT_USING_I2C
+                select RT_USING_I2C_BITOPS
+                select RT_USING_PIN
+                if BSP_USING_I2C4
+                    config BSP_I2C4_SCL_PIN
+                        int "i2c4 scl pin number, PG7"
+                        range 0 143
+                        default 103
+                    config BSP_I2C4_SDA_PIN
+                        int "I2C4 sda pin number, PD7"
+                        range 0 143
+                        default 55
+                endif
+                
+            menuconfig BSP_USING_I2C5
+                bool "Enable I2C5 BUS for RTduino(software simulation)"
+                default n
+                select RT_USING_I2C
+                select RT_USING_I2C_BITOPS
+                select RT_USING_PIN
+                if BSP_USING_I2C5
+                    config BSP_I2C5_SCL_PIN
+                        int "i2c5 scl pin number, PB6"
+                        range 0 143
+                        default 22
+                    config BSP_I2C5_SDA_PIN
+                        int "I2C5 sda pin number, PB7"
+                        range 0 143
+                        default 23
                 endif
         endif
 
@@ -632,7 +838,7 @@ menu "On-chip Peripheral Drivers"
     config BSP_USING_FMC
         bool
         default n
- source "$BSP_DIR/../libraries/HAL_Drivers/drivers/Kconfig"
+ source "$(BSP_DIR)/../libraries/HAL_Drivers/drivers/Kconfig"
 
 endmenu
 

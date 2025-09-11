@@ -196,8 +196,7 @@ contex_ns_load:
 
 #if defined (RT_USING_MEM_PROTECTION)
     PUSH    {r0-r3, r12, lr}
-    LDR     r1, =rt_current_thread
-    LDR     r0, [r1]
+    BL      rt_thread_self
     BL      rt_hw_mpu_table_switch
     POP     {r0-r3, r12, lr}
 #endif
@@ -281,6 +280,12 @@ HardFault_Handler:
     BEQ     get_sp_done
     MRS     r0, psp                                 /* get fault context from thread. */
 get_sp_done:
+
+#if defined (__VFP_FP__) && !defined(__SOFTFP__)
+    TST     lr, #0x10                               /* if(!EXC_RETURN[4]) */
+    IT      EQ
+    VSTMDBEQ  r0!, {d8 - d15}                       /* push FPU register s16~s31 */
+#endif
 
     STMFD   r0!, {r4 - r11}                         /* push r4 - r11 register */
 

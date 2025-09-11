@@ -9,13 +9,14 @@
  */
 
 #include <rtatomic.h>
-#include "serial_dm.h"
+#include <drivers/serial_dm.h>
+
+static int uid_min = -1;
+static volatile rt_atomic_t uid = 0;
 
 int serial_dev_set_name(struct rt_serial_device *sdev)
 {
     int id = -1;
-    static int uid_min = -1;
-    static volatile rt_atomic_t uid = 0;
 
     RT_ASSERT(sdev != RT_NULL);
 
@@ -28,20 +29,6 @@ int serial_dev_set_name(struct rt_serial_device *sdev)
         {
             id = rt_ofw_get_alias_id(sdev->parent.ofw_node, "uart");
         }
-
-        if (uid_min < 0)
-        {
-            uid_min = rt_ofw_get_alias_last_id("serial");
-
-            if (uid_min < 0)
-            {
-                uid_min = rt_ofw_get_alias_last_id("uart");
-            }
-
-            uid_min = uid_min < 0 ? 0 : (uid_min + 1);
-
-            rt_hw_atomic_store(&uid, uid_min);
-        }
     }
 #endif
 
@@ -52,6 +39,25 @@ int serial_dev_set_name(struct rt_serial_device *sdev)
 
     return rt_dm_dev_set_name(&sdev->parent, "uart%u", id);
 }
+
+static int serial_dm_naming_framework_init(void)
+{
+#ifdef RT_USING_OFW
+    uid_min = rt_ofw_get_alias_last_id("serial");
+
+    if (uid_min < 0)
+    {
+        uid_min = rt_ofw_get_alias_last_id("uart");
+    }
+
+    uid_min = uid_min < 0 ? 0 : (uid_min + 1);
+
+    rt_hw_atomic_store(&uid, uid_min);
+#endif
+
+    return 0;
+}
+INIT_PLATFORM_EXPORT(serial_dm_naming_framework_init);
 
 void *serial_base_from_args(char *str)
 {
@@ -82,8 +88,9 @@ void *serial_base_from_args(char *str)
     return (void *)base;
 }
 
-struct serial_configure serial_cfg_from_args(char *str)
+struct serial_configure serial_cfg_from_args(char *_str)
 {
+    char *str = _str;
     struct serial_configure cfg = RT_SERIAL_CONFIG_DEFAULT;
 
     /* Format baudrate/parity/bits/flow (BBBBPNF), Default is 115200n8 */

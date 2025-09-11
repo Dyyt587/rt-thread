@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2023, RT-Thread Development Team
+ * Copyright (c) 2006-2024, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -12,7 +12,7 @@
 #include "drv_soft_spi.h"
 #include "drv_config.h"
 
-#if defined(RT_USING_SPI) && defined(RT_USING_SPI_BITOPS) && defined(RT_USING_PIN)
+#if defined(RT_USING_SPI) && defined(RT_USING_SOFT_SPI) && defined(RT_USING_PIN)
 
 //#define DRV_DEBUG
 #define LOG_TAG             "drv.soft_spi"
@@ -27,6 +27,8 @@ static struct stm32_soft_spi_config soft_spi_config[] =
         SOFT_SPI2_BUS_CONFIG,
 #endif
 };
+
+static struct stm32_soft_spi spi_obj[sizeof(soft_spi_config) / sizeof(soft_spi_config[0])];
 
 /**
   * Attach the spi device to soft SPI bus, this function must be used after initialization.
@@ -154,39 +156,20 @@ void stm32_dir_miso(void *data, rt_int32_t state)
     }
 }
 
-static void stm32_udelay(rt_uint32_t us)
+static void stm32_pin_init(void)
 {
-    rt_uint32_t ticks;
-    rt_uint32_t told, tnow, tcnt = 0;
-    rt_uint32_t reload = SysTick->LOAD;
+    rt_size_t obj_num = sizeof(spi_obj) / sizeof(struct stm32_soft_spi);
 
-    ticks = us * reload / (1000000UL / RT_TICK_PER_SECOND);
-    told = SysTick->VAL;
-    while (1)
+    for(rt_size_t i = 0; i < obj_num; i++)
     {
-        tnow = SysTick->VAL;
-        if (tnow != told)
-        {
-            if (tnow < told)
-            {
-                tcnt += told - tnow;
-            }
-            else
-            {
-                tcnt += reload - tnow + told;
-            }
-            told = tnow;
-            if (tcnt >= ticks)
-            {
-                break;
-            }
-        }
+        stm32_spi_gpio_init(&spi_obj[i]);
     }
 }
 
 static struct rt_spi_bit_ops stm32_soft_spi_ops =
     {
         .data = RT_NULL,
+        .pin_init = stm32_pin_init,
         .tog_sclk = stm32_tog_sclk,
         .set_sclk = stm32_set_sclk,
         .set_mosi = stm32_set_mosi,
@@ -196,11 +179,9 @@ static struct rt_spi_bit_ops stm32_soft_spi_ops =
         .get_miso = stm32_get_miso,
         .dir_mosi = stm32_dir_mosi,
         .dir_miso = stm32_dir_miso,
-        .udelay = stm32_udelay,
+        .udelay = rt_hw_us_delay,
         .delay_us = 1,
 };
-
-static struct stm32_soft_spi spi_obj[sizeof(soft_spi_config) / sizeof(soft_spi_config[0])];
 
 /* Soft SPI initialization function */
 int rt_hw_softspi_init(void)
@@ -208,13 +189,12 @@ int rt_hw_softspi_init(void)
     rt_size_t obj_num = sizeof(spi_obj) / sizeof(struct stm32_soft_spi);
     rt_err_t result;
 
-    for (int i = 0; i < obj_num; i++)
+    for (rt_size_t i = 0; i < obj_num; i++)
     {
         memcpy(&spi_obj[i].ops, &stm32_soft_spi_ops, sizeof(struct rt_spi_bit_ops));
         spi_obj[i].ops.data = (void *)&soft_spi_config[i];
         spi_obj[i].spi.ops = &stm32_soft_spi_ops;
         spi_obj[i].cfg = (void *)&soft_spi_config[i];
-        stm32_spi_gpio_init(&spi_obj[i]);
         result = rt_spi_bit_add_bus(&spi_obj[i].spi, soft_spi_config[i].bus_name, &spi_obj[i].ops);
         RT_ASSERT(result == RT_EOK);
     }
@@ -223,4 +203,4 @@ int rt_hw_softspi_init(void)
 }
 INIT_BOARD_EXPORT(rt_hw_softspi_init);
 
-#endif /* defined(RT_USING_SPI) && defined(RT_USING_SPI_BITOPS) && defined(RT_USING_PIN) */
+#endif /* defined(RT_USING_SPI) && defined(RT_USING_SOFT_SPI) && defined(RT_USING_PIN) */

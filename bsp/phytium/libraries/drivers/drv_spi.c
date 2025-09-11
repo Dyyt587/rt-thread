@@ -47,16 +47,15 @@ static struct rt_event rx_done_event;
 #define EVENT_RX_DONE (1 << 1)
 /*******************************Api Functions*********************************/
 static rt_err_t spim_configure(struct rt_spi_device *device, struct rt_spi_configuration *configuration);
-static rt_uint32_t spim_xfer(struct rt_spi_device *device, struct rt_spi_message *message);
+static rt_ssize_t spim_xfer(struct rt_spi_device *device, struct rt_spi_message *message);
 
 static FError FSpimSetupInterrupt(FSpim *instance_p)
 {
     FASSERT(instance_p);
     FSpimConfig *config_p = &instance_p->config;
     uintptr base_addr = config_p->base_addr;
-    u32 cpu_id = 0;
+    rt_uint32_t cpu_id = rt_hw_cpu_id();
 
-    GetCpuId(&cpu_id);
     LOG_D("cpu_id is %d, irq_num is %d\n", cpu_id, config_p->irq_num);
     config_p->irq_prority = 0xd0;
     rt_hw_interrupt_set_target_cpus(config_p->irq_num, cpu_id);
@@ -97,11 +96,7 @@ static rt_err_t spim_configure(struct rt_spi_device *device,
     RT_ASSERT(device != RT_NULL);
     RT_ASSERT(configuration != RT_NULL);
     phytium_spi_bus *user_data_cfg = device->parent.user_data;
-    FSpimConfig input_cfg = *FSpimLookupConfig(user_data_cfg->spim_instance.config.instance_id);
-#ifdef RT_USING_SMART
-    input_cfg.base_addr = (uintptr)rt_ioremap((void *)input_cfg.base_addr, 0x1000);
-#endif
-    FSpimConfig *set_input_cfg = &input_cfg;
+    FSpimConfig *set_input_cfg = &user_data_cfg->spim_instance.config;
 
     /* set fspim device according to configuration */
     if (configuration->mode & RT_SPI_CPOL)
@@ -131,7 +126,7 @@ static rt_err_t spim_configure(struct rt_spi_device *device,
     }
 
     /* send spi_cfg to RT-Thread sys */
-    ret = FSpimCfgInitialize(&user_data_cfg->spim_instance, &input_cfg);
+    ret = FSpimCfgInitialize(&user_data_cfg->spim_instance, set_input_cfg);
     if (FSPIM_SUCCESS != ret)
     {
         return -RT_ERROR;
@@ -143,17 +138,17 @@ static rt_err_t spim_configure(struct rt_spi_device *device,
     {
         return -RT_ERROR;
     }
-    FSpimRegisterIntrruptHandler(&user_data_cfg->spim_instance, FSPIM_INTR_EVT_RX_DONE, rt_ft_send_event_done, NULL);
+    FSpimRegisterInterruptHandler(&user_data_cfg->spim_instance, FSPIM_INTR_EVT_RX_DONE, rt_ft_send_event_done, NULL);
 
     return ret;
 }
 
-static rt_uint32_t spim_xfer(struct rt_spi_device *device, struct rt_spi_message *message)
+static rt_ssize_t spim_xfer(struct rt_spi_device *device, struct rt_spi_message *message)
 {
     RT_ASSERT(device != RT_NULL);
     RT_ASSERT(device->parent.user_data != RT_NULL);
     RT_ASSERT(message != RT_NULL);
-    rt_size_t message_length;
+    rt_ssize_t message_length;
     rt_uint8_t *recv_buf;
     const rt_uint8_t *send_buf;
 
@@ -212,10 +207,32 @@ static rt_uint32_t spim_xfer(struct rt_spi_device *device, struct rt_spi_message
     return message_length;
 }
 
-static int spi_init(phytium_spi_bus *phytium_spi)
+static int spi_init(phytium_spi_bus *spi_bus)
 {
-    rt_spi_bus_register(&phytium_spi->spi_bus, phytium_spi->name, &spim_ops);
-    RT_ASSERT((struct rt_spi_device *)rt_device_find(phytium_spi->name));
+    FError ret = FSPIM_SUCCESS;
+    FSpimConfig input_cfg = *FSpimLookupConfig(spi_bus->spim_instance.config.instance_id);
+#ifdef RT_USING_SMART
+    input_cfg.base_addr = (uintptr)rt_ioremap((void *)input_cfg.base_addr, 0x1000);
+#endif
+    FSpimConfig *set_input_cfg = &input_cfg;
+
+    /* send spi_cfg to RT-Thread sys */
+    ret = FSpimCfgInitialize(&spi_bus->spim_instance, &input_cfg);
+    if (FSPIM_SUCCESS != ret)
+    {
+        return -RT_ERROR;
+    }
+
+    /* irq setting */
+    ret = FSpimSetupInterrupt(&spi_bus->spim_instance);
+    if (FSPIM_SUCCESS != ret)
+    {
+        return -RT_ERROR;
+    }
+    FSpimRegisterInterruptHandler(&spi_bus->spim_instance, FSPIM_INTR_EVT_RX_DONE, rt_ft_send_event_done, NULL);
+
+    rt_spi_bus_register(&spi_bus->spi_bus, spi_bus->name, &spim_ops);
+    RT_ASSERT((struct rt_spi_device *)rt_device_find(spi_bus->name));
 
     return 0;
 }
@@ -235,7 +252,7 @@ static int spi_init(phytium_spi_bus *phytium_spi)
 
 int rt_hw_spi_init(void)
 {
-    /* event creat */
+    /* event create */
     if (RT_EOK != rt_event_init(&rx_done_event, "rx_done_event", RT_IPC_FLAG_FIFO))
     {
         rt_kprintf("Create event failed.\n");

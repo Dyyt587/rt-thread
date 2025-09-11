@@ -10,6 +10,9 @@
  * 2023-01-31     shelton      add support f421/f425
  * 2023-04-08     shelton      add support f423
  * 2023-10-18     shelton      add support f402/f405
+ * 2024-04-12     shelton      add support a403a and a423
+ * 2024-08-30     shelton      add support m412 and m416
+ * 2024-12-18     shelton      add support f455/f456 and f457
  */
 
 #include "drv_common.h"
@@ -534,7 +537,10 @@ static void at32_spi_dma_init(struct at32_spi *instance)
 #endif
 #if defined (SOC_SERIES_AT32F435) || defined (SOC_SERIES_AT32F437) || \
     defined (SOC_SERIES_AT32F423) || defined (SOC_SERIES_AT32F402) || \
-    defined (SOC_SERIES_AT32F405)
+    defined (SOC_SERIES_AT32F405) || defined (SOC_SERIES_AT32A423) || \
+    defined (SOC_SERIES_AT32M412) || defined (SOC_SERIES_AT32M416) || \
+    defined (SOC_SERIES_AT32F455) || defined (SOC_SERIES_AT32F456) || \
+    defined (SOC_SERIES_AT32F457)
         dmamux_enable(instance->config->dma_rx->dma_x, TRUE);
         dmamux_init(instance->config->dma_rx->dmamux_channel, (dmamux_requst_id_sel_type)instance->config->dma_rx->request_id);
 #endif
@@ -555,7 +561,10 @@ static void at32_spi_dma_init(struct at32_spi *instance)
 #endif
 #if defined (SOC_SERIES_AT32F435) || defined (SOC_SERIES_AT32F437) || \
     defined (SOC_SERIES_AT32F423) || defined (SOC_SERIES_AT32F402) || \
-    defined (SOC_SERIES_AT32F405)
+    defined (SOC_SERIES_AT32F405) || defined (SOC_SERIES_AT32A423) || \
+    defined (SOC_SERIES_AT32M412) || defined (SOC_SERIES_AT32M416) || \
+    defined (SOC_SERIES_AT32F455) || defined (SOC_SERIES_AT32F456) || \
+    defined (SOC_SERIES_AT32F457)
         dmamux_enable(instance->config->dma_tx->dma_x, TRUE);
         dmamux_init(instance->config->dma_tx->dmamux_channel, (dmamux_requst_id_sel_type)instance->config->dma_tx->request_id);
 #endif
@@ -570,7 +579,7 @@ static void at32_spi_dma_init(struct at32_spi *instance)
     }
 }
 
-void dma_isr(struct dma_config *dma_instance)
+void spi_dma_isr(struct dma_config *dma_instance)
 {
     volatile rt_uint32_t reg_sts = 0, index = 0;
 
@@ -623,7 +632,7 @@ void SPI1_RX_DMA_IRQHandler(void)
     /* enter interrupt */
     rt_interrupt_enter();
 
-    dma_isr(spi_config[SPI1_INDEX].dma_rx);
+    spi_dma_isr(spi_config[SPI1_INDEX].dma_rx);
 
     /* leave interrupt */
     rt_interrupt_leave();
@@ -635,7 +644,7 @@ void SPI1_TX_DMA_IRQHandler(void)
     /* enter interrupt */
     rt_interrupt_enter();
 
-    dma_isr(spi_config[SPI1_INDEX].dma_tx);
+    spi_dma_isr(spi_config[SPI1_INDEX].dma_tx);
 
     /* leave interrupt */
     rt_interrupt_leave();
@@ -659,7 +668,7 @@ void SPI2_RX_DMA_IRQHandler(void)
     /* enter interrupt */
     rt_interrupt_enter();
 
-    dma_isr(spi_config[SPI2_INDEX].dma_rx);
+    spi_dma_isr(spi_config[SPI2_INDEX].dma_rx);
 
     /* leave interrupt */
     rt_interrupt_leave();
@@ -671,7 +680,7 @@ void SPI2_TX_DMA_IRQHandler(void)
     /* enter interrupt */
     rt_interrupt_enter();
 
-    dma_isr(spi_config[SPI2_INDEX].dma_tx);
+    spi_dma_isr(spi_config[SPI2_INDEX].dma_tx);
 
     /* leave interrupt */
     rt_interrupt_leave();
@@ -695,7 +704,7 @@ void SPI3_RX_DMA_IRQHandler(void)
     /* enter interrupt */
     rt_interrupt_enter();
 
-    dma_isr(spi_config[SPI3_INDEX].dma_rx);
+    spi_dma_isr(spi_config[SPI3_INDEX].dma_rx);
 
     /* leave interrupt */
     rt_interrupt_leave();
@@ -707,7 +716,7 @@ void SPI3_TX_DMA_IRQHandler(void)
     /* enter interrupt */
     rt_interrupt_enter();
 
-    dma_isr(spi_config[SPI3_INDEX].dma_tx);
+    spi_dma_isr(spi_config[SPI3_INDEX].dma_tx);
 
     /* leave interrupt */
     rt_interrupt_leave();
@@ -731,7 +740,7 @@ void SPI4_RX_DMA_IRQHandler(void)
     /* enter interrupt */
     rt_interrupt_enter();
 
-    dma_isr(spi_config[SPI4_INDEX].dma_rx);
+    spi_dma_isr(spi_config[SPI4_INDEX].dma_rx);
 
     /* leave interrupt */
     rt_interrupt_leave();
@@ -743,7 +752,7 @@ void SPI4_TX_DMA_IRQHandler(void)
     /* enter interrupt */
     rt_interrupt_enter();
 
-    dma_isr(spi_config[SPI4_INDEX].dma_tx);
+    spi_dma_isr(spi_config[SPI4_INDEX].dma_tx);
 
     /* leave interrupt */
     rt_interrupt_leave();

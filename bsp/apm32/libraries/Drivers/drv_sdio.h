@@ -15,8 +15,8 @@
 #include "rtdevice.h"
 #include <rthw.h>
 #include <string.h>
-#include <drivers/mmcsd_core.h>
-#include <drivers/sdio.h>
+#include <drivers/dev_mmcsd_core.h>
+#include <drivers/dev_sdio.h>
 #include "drv_common.h"
 #include "board.h"
 
@@ -26,10 +26,6 @@
 
 #define SDIO_BUFF_SIZE       4096
 #define SDIO_ALIGN_LEN       32
-
-#ifndef SDIO_MAX_FREQ
-#define SDIO_MAX_FREQ        (1000000)
-#endif
 
 #ifndef SDIO_BASE_ADDRESS
 #define SDIO_BASE_ADDRESS    (0x40012800U)

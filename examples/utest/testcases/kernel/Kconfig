@@ -10,6 +10,12 @@ config UTEST_SMALL_MEM_TC
     default y
     depends on RT_USING_SMALL_MEM
 
+config UTEST_OBJECT_TC
+    select RT_USING_DEVICE
+    select RT_USING_SEMAPHORE
+    bool "object test"
+    default n
+
 config UTEST_SLAB_TC
     bool "slab test"
     default n
@@ -56,6 +62,10 @@ config UTEST_THREAD_TC
     select RT_USING_TIMER_SOFT
     select RT_USING_THREAD
 
+config UTEST_DEVICE_TC
+    bool "device test"
+    default n
+
 config UTEST_ATOMIC_TC
     bool "atomic test"
     default n
@@ -72,5 +82,14 @@ config UTEST_MTSAFE_KPRINT_TC
 config UTEST_SCHEDULER_TC
     bool "scheduler test"
     default n
+
+config UTEST_MEMPOOL_TC
+    bool "mempool test"
+    default n
+    depends on RT_USING_MEMPOOL
+
+if RT_USING_SMP
+rsource "smp/Kconfig"
+endif
 
 endmenu

@@ -4,11 +4,35 @@
 
 ## 1. 准备编译环境
 
-- 在aarch32目录下创建tools文件夹，用于存放编译链
+- 在aarch32目录下创建tools文件夹，用于存放编译链，目前支持在以下两种环境进行开发
 ```shell
 mkdir tools
 ```
+注：使用RT-Smart编译链也可编译RT-Thread，但当前不支持C++
+
 ### Ubuntu 环境
+
+#### RT-Thread
+
+- 点击[下载编译链工具](https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-arm-none-eabi.tar.xz)压缩包，放置在tools目录下
+
+- 在tools目录下，使用tar命令解压缩
+```shell
+tar xvf gcc-arm-10.3-2021.07-x86_64-arm-none-eabi.tar.xz
+```
+
+![tar_toolschain_ubuntu](./figures/tar_toolschain_ubuntu.png)
+
+- 返回`aarch32`目录，运行`thread-env.sh脚本`，生效环境变量
+```shell
+source ./thread-env.sh
+```
+
+- 如下所示是`aarch32`编译相关的环境变量，运行`scons`前要确保环境变量设置正确
+
+![aarch32_thread](./figures/aarch32_thread.png)
+
+#### RT-Smart
 
 - 点击[下载编译链工具](https://github.com/RT-Thread/toolchains-ci/releases/tag/v1.7)压缩包，放置在tools目录下，如下所示
 
@@ -45,6 +69,16 @@ rtthread_a32.map
 
 ### RT-Thread env 环境
 
+#### RT-Thread
+
+- RT-Thread env 环境已经内嵌的`aarch32`编译链，运行`thread-env.bat`脚本，生效环境变量即可
+
+```shell
+.\thread-env.bat
+```
+
+#### RT-Smart
+
 - 点击[下载编译链工具](https://pan.baidu.com/s/1p7PRhV3dTGIb7hxv34YWYw)压缩包，提取码：ndxq
 
 - 在tools目录下，将下载好的编译链工具压缩包解压缩，如下所示
@@ -72,20 +106,14 @@ rtthread_a32.map
 ## 2. 如何选择开发板
 
 >注：在 RT-Thread env 环境下使用`menuconfig`指令即可打开配置菜单，在Ubuntu下需要使用`scons --menuconfig`
+- 使用`scons --attach=?`查看当前支持的开发板
+![](./figures/scons_attach.png)
 
-- 以 E2000Q RT-Thread为例，Linux 环境下，运行`make load_e2000d_demo_rtthread`加载默认的 rtconfig, 然后输入下列命令，进入 menuconfig 进一步配置
+- 以`E2000Q_DEMO`开发板为例，进入aarch64目录后，运行`scons --attach=board.e2000q_demo_rtthread`加载默认的`rtconfig.h`, 然后输入下列命令，进入`menuconfig`进一步配置
 
 ```shell
 scons --menuconfig
 ```
-
-开发者通过以下选择进行配置
-
-```
-Standalone Setting > Board Configuration > Chip 
-```
-
-![](./figures/board_select.png)
 
 ## 3. 如何选择驱动
 
@@ -94,9 +122,8 @@ scons --menuconfig
 ```
 
 开发者通过以下选项进行驱动的使能
-
 ```
-Hardware Drivers > On-chip Peripheral Drivers
+Hardware Drivers Config > On-chip Peripheral Drivers
 ```
 
 ![](./figures/select_driver.png)
@@ -111,28 +138,15 @@ scons --menuconfig
 
 ![](./figures/debug_info.png)
 
-
 ## 5. 如何切换至 RT-Thread Smart 工作模式
 
-### Ubuntu环境下可使用以下指令加载RT-Smart默认配置
-
-- 以E2000D_DEMO开发板为例
+- 输入下列命令，进入`menuconfig`进一步配置
 ```shell
-make load_e2000d_demo_rtsmart
+scons --menuconfig
 ```
-### RT-Thread env环境不方便安装make工具，可按照以下步骤加载RT-Smart默认配置
+- 在RT-Thread Kernel菜单中勾选以下选项
 
-1. 查看`makefile`文件，找到`make load_e2000d_demo_rtsmart`
-
-![load_e2000d_rtsmart](./figures/load_e2000d_rtsmart.png)
-
-2. 输入以下指令
-```shell
-cp ./configs/e2000d_demo_rtsmart ./.config -f
-cp ./configs/e2000d_demo_rtsmart.h ./rtconfig.h -f
-scons -c
-```
-
+![](./figures/rtsmart_config.png)
 ## 6. 启动镜像程序
 
 1. 完成配置后，使用以下指令进行clean和重新编译

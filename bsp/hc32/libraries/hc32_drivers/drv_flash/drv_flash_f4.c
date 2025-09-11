@@ -4,8 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
- * Date           Author       Notes
- * 2022-04-28     CDT          first version
+ * Date             Author      Notes
+ * 2022-04-28       CDT         First version
+ * 2024-06-14       CDT         Fixed sector number calculation
+ * 2024-06-18       CDT         Support HC32F460,HC32F448,HC32F472
+ * 2025-07-16       CDT         Support HC32F334
  */
 
 #include "board.h"
@@ -19,7 +22,7 @@
 #endif
 
 //#define DRV_DEBUG
-#define LOG_TAG                "drv.flash"
+#define LOG_TAG                 "drv.flash"
 #include <drv_log.h>
 
 /**
@@ -30,30 +33,14 @@
  */
 static rt_uint32_t GetSectorNum(rt_uint32_t addr, size_t size)
 {
-    rt_uint32_t firstSector = 0, temp = 0;
-    rt_uint32_t sectorNum = 0;
+    rt_uint32_t firstSector = 0, lastSector = 0;
+    rt_uint32_t NumOfSectors = 0;
 
-    firstSector = addr / SECTOR_SIZE;
-    if (0U != (addr % SECTOR_SIZE))
-    {
-        temp = (firstSector + 1U) * SECTOR_SIZE - addr;
-        sectorNum = 1U;
-        if (temp >= size)
-        {
-            return sectorNum;
-        }
-        else
-        {
-            size = size - temp;
-        }
-    }
-    sectorNum += size / SECTOR_SIZE;
-    if (0U != (size % SECTOR_SIZE))
-    {
-        sectorNum += 1U;
-    }
+    firstSector = addr / EFM_SECTOR_SIZE;
+    lastSector = (addr + size - 1U) / EFM_SECTOR_SIZE;
+    NumOfSectors = lastSector - firstSector + 1U;
 
-    return sectorNum;
+    return NumOfSectors;
 }
 
 /**
@@ -90,11 +77,13 @@ int hc32_flash_read(rt_uint32_t addr, rt_uint8_t *buf, size_t size)
  */
 int hc32_flash_write(rt_uint32_t addr, const rt_uint8_t *buf, size_t size)
 {
-    uint8_t u8MemBuf[4] = {0xFF, 0xFF, 0xFF, 0xFF};
+    uint8_t u8MemBuf[HC32_FLASH_WRITE_GRANULARITY];
     rt_err_t result = RT_EOK;
-    rt_uint32_t FirstSector = 0, NbOfSectors = 0;
     rt_uint32_t newAddr = addr, offsetVal = 0;
     rt_uint32_t index = 0, u32Cnt = 0;
+#if defined (HC32F4A0) || defined (HC32F472) || defined (HC32F448) || defined (HC32F4A8) || defined (HC32F334)
+    rt_uint32_t FirstSector = 0, NumOfSectors = 0;
+#endif
 
     if ((addr + size) > HC32_FLASH_END_ADDRESS)
     {
@@ -106,30 +95,36 @@ int hc32_flash_write(rt_uint32_t addr, const rt_uint8_t *buf, size_t size)
         return -RT_EINVAL;
     }
 
+    for (u32Cnt = 0; u32Cnt < HC32_FLASH_WRITE_GRANULARITY; u32Cnt++)
+    {
+        u8MemBuf[u32Cnt] = 0xFF;
+    }
     /* EFM_FWMC write enable */
     EFM_FWMC_Cmd(ENABLE);
+#if defined (HC32F4A0) || defined (HC32F472) || defined (HC32F448) || defined (HC32F4A8) || defined (HC32F334)
     /* calculate sector information */
-    FirstSector = addr / SECTOR_SIZE,
-    NbOfSectors = GetSectorNum(addr, size);
+    FirstSector = addr / EFM_SECTOR_SIZE,
+    NumOfSectors = GetSectorNum(addr, size);
     /* Sectors disable write protection */
-    EFM_SequenceSectorOperateCmd(FirstSector, NbOfSectors, ENABLE);
+    EFM_SequenceSectorOperateCmd(FirstSector, NumOfSectors, ENABLE);
+#endif
     /* Word align */
-    if (0U != (addr % 4))
+    if (0U != (addr % HC32_FLASH_WRITE_GRANULARITY))
     {
-        newAddr = (addr / 4 + 1U) * 4;
+        newAddr = (addr / HC32_FLASH_WRITE_GRANULARITY + 1U) * HC32_FLASH_WRITE_GRANULARITY;
         offsetVal = newAddr - addr;
         if (offsetVal >= size)
         {
             result = -RT_ERROR;
-            index = 4 - offsetVal;
-            if (LL_OK == EFM_ReadByte(newAddr - 4, u8MemBuf, index))
+            index = HC32_FLASH_WRITE_GRANULARITY - offsetVal;
+            if (LL_OK == EFM_ReadByte(newAddr - HC32_FLASH_WRITE_GRANULARITY, u8MemBuf, index))
             {
                 for (u32Cnt = 0; u32Cnt < size; u32Cnt++)
                 {
                     u8MemBuf[index + u32Cnt] = buf[u32Cnt];
                 }
                 /* program */
-                if (LL_OK == EFM_Program(newAddr - 4, u8MemBuf, 4))
+                if (LL_OK == EFM_Program(newAddr - HC32_FLASH_WRITE_GRANULARITY, u8MemBuf, HC32_FLASH_WRITE_GRANULARITY))
                 {
                     result = RT_EOK;
                 }
@@ -149,8 +144,10 @@ int hc32_flash_write(rt_uint32_t addr, const rt_uint8_t *buf, size_t size)
     }
 
 __exit:
+#if defined (HC32F4A0) || defined (HC32F472) || defined (HC32F448) || defined (HC32F4A8) || defined (HC32F334)
     /* Sectors enable write protection */
-    EFM_SequenceSectorOperateCmd(FirstSector, NbOfSectors, DISABLE);
+    EFM_SequenceSectorOperateCmd(FirstSector, NumOfSectors, DISABLE);
+#endif
     EFM_FWMC_Cmd(DISABLE);
 
     if (result != RT_EOK)
@@ -171,8 +168,11 @@ __exit:
 int hc32_flash_erase(rt_uint32_t addr, size_t size)
 {
     rt_err_t result = RT_EOK;
-    rt_uint32_t FirstSector = 0, NbOfSectors = 0;
-    rt_uint32_t SectorVal = 0, u32Addr;
+    rt_uint32_t NumOfSectors = 0;
+    rt_uint32_t SectorVal = 0, u32Addr = addr;
+#if defined (HC32F4A0) || defined (HC32F472) || defined (HC32F448) || defined (HC32F4A8) || defined (HC32F334)
+    rt_uint32_t FirstSector = 0;
+#endif
 
     if ((addr + size) > HC32_FLASH_END_ADDRESS)
     {
@@ -187,22 +187,26 @@ int hc32_flash_erase(rt_uint32_t addr, size_t size)
     /* EFM_FWMC write enable */
     EFM_FWMC_Cmd(ENABLE);
     /* calculate sector information */
-    FirstSector = addr / SECTOR_SIZE,
-    NbOfSectors = GetSectorNum(addr, size);
+    NumOfSectors = GetSectorNum(addr, size);
+#if defined (HC32F4A0) || defined (HC32F472) || defined (HC32F448) || defined (HC32F4A8) || defined (HC32F334)
+    FirstSector = addr / EFM_SECTOR_SIZE,
     /* Sectors disable write protection */
-    EFM_SequenceSectorOperateCmd(FirstSector, NbOfSectors, ENABLE);
+    EFM_SequenceSectorOperateCmd(FirstSector, NumOfSectors, ENABLE);
+#endif
     /* Erase sector */
-    for (SectorVal = FirstSector; SectorVal < NbOfSectors; SectorVal++)
+    for (SectorVal = 0U; SectorVal < NumOfSectors; SectorVal++)
     {
-        u32Addr = EFM_SECTOR_ADDR(SectorVal);
         if (LL_OK != EFM_SectorErase(u32Addr))
         {
             result = -RT_ERROR;
             break;
         }
+        u32Addr += EFM_SECTOR_SIZE;
     }
+#if defined (HC32F4A0) || defined (HC32F472) || defined (HC32F448) || defined (HC32F4A8) || defined (HC32F334)
     /* Sectors enable write protection */
-    EFM_SequenceSectorOperateCmd(FirstSector, NbOfSectors, DISABLE);
+    EFM_SequenceSectorOperateCmd(FirstSector, NumOfSectors, DISABLE);
+#endif
     EFM_FWMC_Cmd(DISABLE);
 
     if (result != RT_EOK)
@@ -218,14 +222,15 @@ int hc32_flash_erase(rt_uint32_t addr, size_t size)
 static int fal_flash_read(long offset, rt_uint8_t *buf, size_t size);
 static int fal_flash_write(long offset, const rt_uint8_t *buf, size_t size);
 static int fal_flash_erase(long offset, size_t size);
+
 const struct fal_flash_dev hc32_onchip_flash =
 {
     .name       = "onchip_flash",
     .addr       = HC32_FLASH_START_ADDRESS,
     .len        = HC32_FLASH_SIZE,
-    .blk_size   = HC32_FLASH_SIZE_GRANULARITY,
+    .blk_size   = HC32_FLASH_ERASE_GRANULARITY,
     .ops        = {NULL, fal_flash_read, fal_flash_write, fal_flash_erase},
-    .write_gran = 4
+    .write_gran = HC32_FLASH_WRITE_GRANULARITY
 };
 
 static int fal_flash_read(long offset, rt_uint8_t *buf, size_t size)

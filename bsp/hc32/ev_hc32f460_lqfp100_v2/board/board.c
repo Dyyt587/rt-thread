@@ -6,6 +6,7 @@
  * Change Logs:
  * Date           Author       Notes
  * 2022-04-28     CDT          first version
+ * 2024-06-11     CDT          remove CLK_Delay for usb, as it is already included in ddl API
  */
 
 #include "board.h"
@@ -13,30 +14,8 @@
 
 /* unlock/lock peripheral */
 #define EXAMPLE_PERIPH_WE               (LL_PERIPH_GPIO | LL_PERIPH_EFM | LL_PERIPH_FCG | \
-                                         LL_PERIPH_PWC_CLK_RMU | LL_PERIPH_SRAM)
+                                         LL_PERIPH_PWC_CLK_RMU | LL_PERIPH_SRAM | LL_PERIPH_LVD)
 #define EXAMPLE_PERIPH_WP               (LL_PERIPH_EFM | LL_PERIPH_FCG | LL_PERIPH_SRAM)
-
-#if defined(BSP_USING_USBD) || defined(BSP_USING_USBH)
-/**
- * @brief Switch clock stable time
- * @note Approx. 30us
- */
-#define CLK_SYSCLK_SW_STB               (HCLK_VALUE / 50000UL)
-/**
- * @brief Clk delay function
- * @param [in] u32Delay         count
- * @retval when switch clock source, should be delay some time to wait stable.
- */
-static void CLK_Delay(uint32_t u32Delay)
-{
-    __IO uint32_t u32Timeout = 0UL;
-
-    while (u32Timeout < u32Delay)
-    {
-        u32Timeout++;
-    }
-}
-#endif
 
 /** System Base Configuration
 */
@@ -53,7 +32,7 @@ void SystemClock_Config(void)
 {
     stc_clock_xtal_init_t     stcXtalInit;
     stc_clock_pll_init_t      stcMpllInit;
-#if defined(BSP_USING_USBD) || defined(BSP_USING_USBH)
+#if defined(BSP_USING_USBD) || defined(BSP_USING_USBH) || defined(RT_USING_CHERRYUSB)
     stc_clock_pllx_init_t stcUpllInit;
 #endif
 #if defined(BSP_RTC_USING_XTAL32) || defined(RT_USING_PM)
@@ -101,7 +80,7 @@ void SystemClock_Config(void)
     /* Switch system clock source to MPLL. */
     CLK_SetSysClockSrc(CLK_SYSCLK_SRC_PLL);
 
-#if defined(BSP_USING_USBD) || defined(BSP_USING_USBH)
+#if defined(BSP_USING_USBD) || defined(BSP_USING_USBH) || defined(RT_USING_CHERRYUSB)
     /* PLLX for USB */
     (void)CLK_PLLxStructInit(&stcUpllInit);
     /* VCO = (8/2)*120 = 480MHz*/
@@ -134,10 +113,8 @@ void PeripheralClock_Config(void)
     CLK_SetPeriClockSrc(CLK_PERIPHCLK_PCLK);
 #endif
 
-#if defined(BSP_USING_USBD) || defined(BSP_USING_USBH)
+#if defined(BSP_USING_USBD) || defined(BSP_USING_USBH) || defined(RT_USING_CHERRYUSB)
     CLK_SetUSBClockSrc(CLK_USBCLK_PLLXP);
-    /* Wait stable here, since the current DDL API does not include this */
-    CLK_Delay(CLK_SYSCLK_SW_STB);
 #endif
 }
 
@@ -147,5 +124,3 @@ void PeripheralRegister_Unlock(void)
 {
     LL_PERIPH_WE(EXAMPLE_PERIPH_WE);
 }
-
-/*@}*/

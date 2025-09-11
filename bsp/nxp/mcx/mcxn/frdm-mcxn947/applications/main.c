@@ -13,9 +13,10 @@
  */
 
 #include <rtdevice.h>
+#include <rtthread.h>
 #include "drv_pin.h"
 
-#define LEDB_PIN        ((0*32)+10)
+#define LEDB_PIN        ((1*32)+2)
 #define BUTTON_PIN      ((0*32)+23)
 
 static void sw_pin_cb(void *args);
